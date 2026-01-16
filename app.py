@@ -3,12 +3,9 @@ import sqlite3
 
 app = Flask(__name__)
 
-# Configuration de la base de données
 def init_db():
     conn = sqlite3.connect('database.db')
     c = conn.cursor()
-    # On crée une table pour stocker les événements sportifs
-    # Correspond aux données citées dans le PDF (Sport, Niveau, Lieu...) [cite: 28-33]
     c.execute('''CREATE TABLE IF NOT EXISTS events
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   organisateur TEXT,
@@ -20,7 +17,6 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Route 1 : Page d'accueil (Le "Matching")
 @app.route('/')
 def index():
     conn = sqlite3.connect('database.db')
@@ -29,19 +25,27 @@ def index():
     c.execute("SELECT * FROM events ORDER BY id DESC")
     events = c.fetchall()
     conn.close()
-    return render_template('index.html', events=events)
+    
+    # --- SIMULATION GAMIFICATION ---
+    # On simule un utilisateur connecté pour la démo
+    user_stats = {
+        "pseudo": "Eleve_Test",
+        "points": 120,
+        "niveau": "Explorateur Sportif",
+        "next_level": 200
+    }
+    
+    return render_template('index.html', events=events, user=user_stats)
 
-# Route 2 : Page pour ajouter une activité
 @app.route('/add', methods=('GET', 'POST'))
 def add():
     if request.method == 'POST':
-        # Récupération des données du formulaire
         organisateur = request.form['organisateur']
         sport = request.form['sport']
         niveau = request.form['niveau']
         lieu = request.form['lieu']
         date_heure = request.form['date_heure']
-        accessibilite = request.form.get('accessibilite') # Checkbox
+        accessibilite = request.form.get('accessibilite')
 
         conn = sqlite3.connect('database.db')
         c = conn.cursor()
@@ -54,5 +58,4 @@ def add():
 
 if __name__ == '__main__':
     init_db()
-    # Lancement sur le port 5000, accessible depuis l'extérieur (0.0.0.0)
     app.run(host='0.0.0.0', port=5000, debug=True)

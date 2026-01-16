@@ -2,33 +2,74 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Sport Connect - MVP</title>
+    <title>Sport Connect - SFT 2026</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Un peu de style pour le logo */
+        .navbar-brand img {
+            height: 40px;
+            margin-right: 10px;
+        }
+        .xp-bar {
+            width: 150px;
+        }
+    </style>
 </head>
 <body class="bg-light">
-    <div class="container mt-4">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="static\logo.png" alt="Logo" class="rounded-circle">
+                Sport Connect
+            </a>
+            
+            <div class="d-flex align-items-center text-white">
+                <div class="me-3 text-end">
+                    <small class="d-block text-muted">Bienvenue, {{ user.pseudo }}</small>
+                    <strong>{{ user.niveau }}</strong>
+                </div>
+                <div>
+                    <div class="progress xp-bar" style="height: 10px;">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: 60%;"></div>
+                    </div>
+                    <small class="text-warning">{{ user.points }} pts / {{ user.next_level }}</small>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>🏃 Sport Connect</h1>
+            <h3>🏃 Activités disponibles</h3>
             <a href="/add" class="btn btn-primary">+ Proposer une activité</a>
         </div>
 
         <div class="row">
             {% for event in events %}
             <div class="col-md-4 mb-3">
-                <div class="card shadow-sm">
+                <div class="card shadow-sm h-100">
                     <div class="card-body">
-                        <h5 class="card-title">{{ event.sport }} <span class="badge bg-info">{{ event.niveau }}</span></h5>
-                        <p class="card-text">
-                            <strong>Lieu :</strong> {{ event.lieu }}<br>
-                            <strong>Quand :</strong> {{ event.date_heure }}<br>
-                            <small class="text-muted">Proposé par {{ event.organisateur }}</small>
+                        <div class="d-flex justify-content-between">
+                            <h5 class="card-title">{{ event.sport }}</h5>
+                            <span class="badge bg-info text-dark">{{ event.niveau }}</span>
+                        </div>
+                        
+                        <p class="card-text mt-2">
+                            <strong>📍 Lieu :</strong> {{ event.lieu }}<br>
+                            <strong>🕒 Quand :</strong> {{ event.date_heure }}<br>
+                            <small class="text-muted">Proposé par <strong>{{ event.organisateur }}</strong></small>
                         </p>
+
                         {% if event.accessibilite %}
-                        <div class="alert alert-success py-1">
-                            ♿ Accessible PMR / Adapté
+                        <div class="alert alert-success py-1 fs-6">
+                            ♿ Accessible & Inclusif
                         </div>
                         {% endif %}
-                        <a href="#" class="btn btn-outline-success btn-sm w-100">Rejoindre</a>
+
+                        <button onclick="rejoindre('{{ event.organisateur }}', '{{ event.sport }}')" class="btn btn-outline-success w-100 mt-2">
+                            Rejoindre le groupe
+                        </button>
                     </div>
                 </div>
             </div>
@@ -37,5 +78,22 @@
             {% endfor %}
         </div>
     </div>
+
+    <script>
+        function rejoindre(organisateur, sport) {
+            // 1. Simulation de la mise en relation
+            alert("✅ MISE EN RELATION REUSSIE !\n\nVous avez rejoint le groupe de " + organisateur + " pour faire du " + sport + ".\n\nLe chat de groupe est maintenant ouvert.");
+            
+            // 2. Simulation de la Gamification
+            alert("🏆 BRAVO !\n\n+50 POINTS gagnés pour votre engagement sportif !\nVous vous rapprochez du niveau 'Athlète confirmé'.");
+            
+            // Pour le fun, on pourrait changer le texte du bouton dynamiquement
+            event.target.innerText = "Chat ouvert 💬";
+            event.target.className = "btn btn-success w-100 mt-2";
+            event.target.disabled = true;
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
