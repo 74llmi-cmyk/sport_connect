@@ -26,13 +26,14 @@ Sport Connect est une plateforme web permettant aux utilisateurs de proposer et 
 ```
 sport_connect/
 ├── app.py                 # Application Flask principale
-├── database.db            # Base de données SQLite
+├── requirements.txt       # Dépendances Python du projet
+├── database.db            # Base de données SQLite (généré automatiquement)
 ├── static/
 │   └── logo.png          # Logo de l'application
 ├── templates/
 │   ├── index.html        # Page d'accueil avec liste des activités
 │   └── add.html          # Formulaire d'ajout d'activité
-└── venv/                 # Environnement virtuel Python
+└── .venv/                # Environnement virtuel Python (non versionné)
 ```
 
 ## Installation
@@ -53,18 +54,20 @@ cd sport_connect
 2. Créer et activer un environnement virtuel :
 ```bash
 # Windows
-python -m venv venv
-venv\Scripts\activate
+python -m venv .venv
+.venv\Scripts\activate
 
 # macOS/Linux
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 ```
 
 3. Installer les dépendances :
 ```bash
-pip install flask
+pip install -r requirements.txt
 ```
+
+**Note** : Le fichier `requirements.txt` contient toutes les dépendances nécessaires (Flask, Jinja2, Werkzeug, etc.). Vous n'avez plus besoin de les installer manuellement une par une.
 
 4. Lancer l'application :
 ```bash
