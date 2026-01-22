@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Mon Profil - Sport Connect{% endblock %}
+
+{% block content %}
+<!-- En-tête du profil -->
+<div class="profile-header">
+    <div class="row align-items-center">
+        <div class="col-auto">
+            <div class="profile-avatar-large" style="background-color: {{ current_user.avatar_color }};">
+                {{ current_user.get_initials() }}
+            </div>
+        </div>
+        <div class="col">
+            <h2 class="mb-1">{{ current_user.username }}</h2>
+            {% set level_info = current_user.get_level_info() %}
+            <h5 class="mb-2">
+                <span class="badge bg-white text-dark">{{ level_info.name }}</span>
+            </h5>
+            <div class="progress progress-custom mb-2" style="max-width: 400px;">
+                <div class="progress-bar progress-bar-custom"
+                     role="progressbar"
+                     style="width: {{ level_info.progress }}%;"
+                     aria-valuenow="{{ level_info.progress }}"
+                     aria-valuemin="0"
+                     aria-valuemax="100">
+                </div>
+            </div>
+            <small>{{ level_info.points }} points / {{ level_info.next_level }}</small>
+        </div>
+    </div>
+</div>
+
+<!-- Statistiques -->
+<div class="row mb-5">
+    <div class="col-md-4 mb-3">
+        <div class="stat-card">
+            <div class="stat-number">{{ current_user.points }}</div>
+            <div class="stat-label">Points totaux</div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="stat-card">
+            <div class="stat-number">{{ organized_events|length }}</div>
+            <div class="stat-label">Événements organisés</div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="stat-card">
+            <div class="stat-number">{{ participated_events|length }}</div>
+            <div class="stat-label">Participations</div>
+        </div>
+    </div>
+</div>
+
+<!-- Onglets -->
+<ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="organized-tab" data-bs-toggle="tab" data-bs-target="#organized" type="button" role="tab">
+            Mes événements organisés
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="participated-tab" data-bs-toggle="tab" data-bs-target="#participated" type="button" role="tab">
+            Mes participations
+        </button>
+    </li>
+</ul>
+
+<!-- Contenu des onglets -->
+<div class="tab-content" id="profileTabsContent">
+    <!-- Onglet événements organisés -->
+    <div class="tab-pane fade show active" id="organized" role="tabpanel">
+        {% if organized_events %}
+        <div class="table-responsive">
+            <table class="table table-events">
+                <thead>
+                    <tr>
+                        <th>Sport</th>
+                        <th>Niveau</th>
+                        <th>Lieu</th>
+                        <th>Date et heure</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in organized_events %}
+                    <tr>
+                        <td><strong>{{ event.sport }}</strong></td>
+                        <td>
+                            <span class="badge
+                                {% if event.niveau == 'Débutant' %}niveau-debutant
+                                {% elif event.niveau == 'Intermédiaire' %}niveau-intermediaire
+                                {% else %}niveau-expert{% endif %}">
+                                {{ event.niveau }}
+                            </span>
+                        </td>
+                        <td>{{ event.lieu }}</td>
+                        <td>{{ event.date_heure }}</td>
+                        <td>
+                            {% if event.is_cancelled %}
+                                <span class="badge bg-danger">Annulé</span>
+                            {% else %}
+                                <span class="badge bg-success">Actif</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">📅</div>
+            <h5>Aucun événement organisé</h5>
+            <p class="text-muted">Vous n'avez pas encore créé d'événement.</p>
+            <a href="{{ url_for('add') }}" class="btn btn-primary mt-3">
+                + Proposer une activité
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Onglet participations -->
+    <div class="tab-pane fade" id="participated" role="tabpanel">
+        {% if participated_events %}
+        <div class="table-responsive">
+            <table class="table table-events">
+                <thead>
+                    <tr>
+                        <th>Sport</th>
+                        <th>Niveau</th>
+                        <th>Lieu</th>
+                        <th>Date et heure</th>
+                        <th>Points gagnés</th>
+                        <th>Date d'inscription</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in participated_events %}
+                    <tr>
+                        <td><strong>{{ event.sport }}</strong></td>
+                        <td>
+                            <span class="badge
+                                {% if event.niveau == 'Débutant' %}niveau-debutant
+                                {% elif event.niveau == 'Intermédiaire' %}niveau-intermediaire
+                                {% else %}niveau-expert{% endif %}">
+                                {{ event.niveau }}
+                            </span>
+                        </td>
+                        <td>{{ event.lieu }}</td>
+                        <td>{{ event.date_heure }}</td>
+                        <td><span class="badge bg-success">+{{ event.points_awarded }} pts</span></td>
+                        <td>{{ event.joined_at[:10] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">🏃</div>
+            <h5>Aucune participation</h5>
+            <p class="text-muted">Vous n'avez pas encore rejoint d'événement.</p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary mt-3">
+                Découvrir les activités
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Retour à l'accueil -->
+<div class="text-center mt-5">
+    <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+        ← Retour aux activités
+    </a>
+</div>
+{% endblock %}

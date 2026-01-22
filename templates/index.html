@@ -1,99 +1,167 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Sport Connect - SFT 2026</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        /* Un peu de style pour le logo */
-        .navbar-brand img {
-            height: 40px;
-            margin-right: 10px;
-        }
-        .xp-bar {
-            width: 150px;
-        }
-    </style>
-</head>
-<body class="bg-light">
+{% extends "base.html" %}
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-        <div class="container">
-            <a class="navbar-brand" href="#">
-                <img src="static\logo.png" alt="Logo" class="rounded-circle">
-                Sport Connect
-            </a>
-            
-            <div class="d-flex align-items-center text-white">
-                <div class="me-3 text-end">
-                    <small class="d-block text-muted">Bienvenue, {{ user.pseudo }}</small>
-                    <strong>{{ user.niveau }}</strong>
-                </div>
-                <div>
-                    <div class="progress xp-bar" style="height: 10px;">
-                        <div class="progress-bar bg-warning" role="progressbar" style="width: 60%;"></div>
-                    </div>
-                    <small class="text-warning">{{ user.points }} pts / {{ user.next_level }}</small>
-                </div>
+{% block title %}Activités disponibles - Sport Connect{% endblock %}
+
+{% block content %}
+<!-- En-tête de page -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3>🏃 Activités disponibles</h3>
+    <a href="{{ url_for('add') }}" class="btn btn-primary">+ Proposer une activité</a>
+</div>
+
+<!-- Section filtres -->
+<div class="filters-section">
+    <h5 class="mb-3">Filtrer les activités</h5>
+    <form method="get" action="{{ url_for('index') }}" id="filter-form">
+        <div class="row g-3">
+            <!-- Filtre par sport -->
+            <div class="col-md-3">
+                <label class="filter-label">Sport</label>
+                <select name="sport" class="form-select" onchange="autoSubmitFilter()">
+                    <option value="">Tous les sports</option>
+                    {% for sport in sports_list %}
+                        <option value="{{ sport }}" {% if filters.sport == sport %}selected{% endif %}>
+                            {{ sport }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Filtre par niveau -->
+            <div class="col-md-3">
+                <label class="filter-label">Niveau</label>
+                <select name="niveau" class="form-select" onchange="autoSubmitFilter()">
+                    <option value="">Tous les niveaux</option>
+                    {% for niveau in niveaux_list %}
+                        <option value="{{ niveau }}" {% if filters.niveau == niveau %}selected{% endif %}>
+                            {{ niveau }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Filtre par lieu -->
+            <div class="col-md-4">
+                <label class="filter-label">Lieu</label>
+                <input type="text"
+                       name="lieu"
+                       class="form-control"
+                       placeholder="Rechercher un lieu..."
+                       value="{{ filters.lieu }}">
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100 me-2">Filtrer</button>
+                {% if filters.sport or filters.niveau or filters.lieu %}
+                    <button type="button" class="btn btn-outline-secondary" onclick="resetFilters()">
+                        ✕
+                    </button>
+                {% endif %}
             </div>
         </div>
-    </nav>
+    </form>
+</div>
 
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3>🏃 Activités disponibles</h3>
-            <a href="/add" class="btn btn-primary">+ Proposer une activité</a>
-        </div>
+<!-- Liste des événements -->
+<div class="row">
+    {% if events %}
+        {% for item in events %}
+        <div class="col-md-4 mb-4">
+            <div class="card event-card h-100 shadow-sm {% if item.user_joined %}event-joined{% endif %}">
+                <div class="card-body">
+                    <!-- En-tête de la carte -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="card-title mb-0">{{ item.event.sport }}</h5>
+                        <span class="badge
+                            {% if item.event.niveau == 'Débutant' %}niveau-debutant
+                            {% elif item.event.niveau == 'Intermédiaire' %}niveau-intermediaire
+                            {% else %}niveau-expert{% endif %}">
+                            {{ item.event.niveau }}
+                        </span>
+                    </div>
 
-        <div class="row">
-            {% for event in events %}
-            <div class="col-md-4 mb-3">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <h5 class="card-title">{{ event.sport }}</h5>
-                            <span class="badge bg-info text-dark">{{ event.niveau }}</span>
-                        </div>
-                        
-                        <p class="card-text mt-2">
-                            <strong>📍 Lieu :</strong> {{ event.lieu }}<br>
-                            <strong>🕒 Quand :</strong> {{ event.date_heure }}<br>
-                            <small class="text-muted">Proposé par <strong>{{ event.organisateur }}</strong></small>
-                        </p>
+                    <!-- Informations de l'événement -->
+                    <p class="card-text">
+                        <strong>📍 Lieu :</strong> {{ item.event.lieu }}<br>
+                        <strong>🕒 Quand :</strong> {{ item.event.date_heure }}<br>
+                        <strong>👤 Organisateur :</strong> {{ item.organizer_name }}
+                    </p>
 
-                        {% if event.accessibilite %}
-                        <div class="alert alert-success py-1 fs-6">
-                            ♿ Accessible & Inclusif
-                        </div>
+                    <!-- Nombre de participants -->
+                    <div class="mb-2">
+                        <span class="badge badge-participant">
+                            👥 {{ item.participant_count }} participant{% if item.participant_count > 1 %}s{% endif %}
+                        </span>
+                    </div>
+
+                    <!-- Badge accessibilité -->
+                    {% if item.event.accessibilite %}
+                    <div class="mb-3">
+                        <span class="accessibility-badge">
+                            ♿ Accessible PMR
+                        </span>
+                    </div>
+                    {% endif %}
+
+                    <!-- Badge "Déjà inscrit" -->
+                    {% if item.user_joined %}
+                    <div class="mb-2">
+                        <span class="badge badge-joined">
+                            ✓ Vous participez
+                        </span>
+                    </div>
+                    {% endif %}
+
+                    <!-- Boutons d'action -->
+                    <div class="mt-3">
+                        {% if item.is_organizer %}
+                            <!-- Bouton annuler (organisateur) -->
+                            <button onclick="cancelEvent({{ item.event.id }})"
+                                    class="btn btn-cancel-event w-100">
+                                Annuler l'événement
+                            </button>
+                        {% elif item.user_joined %}
+                            <!-- Bouton quitter -->
+                            <button onclick="leaveEvent({{ item.event.id }})"
+                                    class="btn btn-leave w-100">
+                                Quitter le groupe
+                            </button>
+                        {% else %}
+                            <!-- Bouton rejoindre -->
+                            <button onclick="joinEvent({{ item.event.id }})"
+                                    class="btn btn-join w-100">
+                                Rejoindre le groupe
+                            </button>
                         {% endif %}
-
-                        <button onclick="rejoindre('{{ event.organisateur }}', '{{ event.sport }}')" class="btn btn-outline-success w-100 mt-2">
-                            Rejoindre le groupe
-                        </button>
                     </div>
                 </div>
             </div>
-            {% else %}
-            <div class="alert alert-warning">Aucune activité pour le moment. Soyez le premier !</div>
-            {% endfor %}
         </div>
-    </div>
-
-    <script>
-        function rejoindre(organisateur, sport) {
-            // 1. Simulation de la mise en relation
-            alert("✅ MISE EN RELATION REUSSIE !\n\nVous avez rejoint le groupe de " + organisateur + " pour faire du " + sport + ".\n\nLe chat de groupe est maintenant ouvert.");
-            
-            // 2. Simulation de la Gamification
-            alert("🏆 BRAVO !\n\n+50 POINTS gagnés pour votre engagement sportif !\nVous vous rapprochez du niveau 'Athlète confirmé'.");
-            
-            // Pour le fun, on pourrait changer le texte du bouton dynamiquement
-            event.target.innerText = "Chat ouvert 💬";
-            event.target.className = "btn btn-success w-100 mt-2";
-            event.target.disabled = true;
-        }
-    </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+        {% endfor %}
+    {% else %}
+        <!-- État vide -->
+        <div class="col-12">
+            <div class="empty-state">
+                <div class="empty-state-icon">🏃</div>
+                <h4>Aucune activité trouvée</h4>
+                <p class="text-muted">
+                    {% if filters.sport or filters.niveau or filters.lieu %}
+                        Aucun événement ne correspond à vos critères de recherche.
+                        <br>
+                        <button onclick="resetFilters()" class="btn btn-outline-primary mt-3">
+                            Réinitialiser les filtres
+                        </button>
+                    {% else %}
+                        Soyez le premier à proposer une activité !
+                        <br>
+                        <a href="{{ url_for('add') }}" class="btn btn-primary mt-3">
+                            + Proposer une activité
+                        </a>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

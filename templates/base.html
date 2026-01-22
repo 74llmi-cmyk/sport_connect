@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sport Connect - SFT 2026{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="bg-light">
+
+    <!-- Navbar principale -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <!-- Logo et nom -->
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="rounded-circle" style="height: 40px; margin-right: 10px;">
+                Sport Connect
+            </a>
+
+            <!-- Bouton toggle pour mobile -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            {% if current_user.is_authenticated %}
+            <!-- Menu de navigation -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">
+                            🏃 Activités
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('map_view') }}">
+                            🗺️ Carte
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('add') }}">
+                            ➕ Proposer
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if current_user.is_authenticated %}
+            <!-- Gamification bar -->
+            <div class="d-flex align-items-center text-white ms-auto">
+                <!-- Avatar et informations utilisateur -->
+                <div class="dropdown">
+                    <button class="btn btn-link text-white text-decoration-none dropdown-toggle"
+                            type="button"
+                            id="userDropdown"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        <!-- Avatar cercle avec initiales -->
+                        <span class="avatar-circle me-2" style="background-color: {{ current_user.avatar_color }};">
+                            {{ current_user.get_initials() }}
+                        </span>
+                        <span class="d-none d-md-inline">{{ current_user.username }}</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" href="{{ url_for('profile') }}">Mon Profil</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('logout') }}">Déconnexion</a></li>
+                    </ul>
+                </div>
+
+                <!-- Barre de gamification -->
+                <div class="ms-3 text-end">
+                    {% set level_info = current_user.get_level_info() %}
+                    <small class="d-block text-muted">{{ level_info.name }}</small>
+                    <div class="progress" style="width: 150px; height: 10px;">
+                        <div class="progress-bar bg-{{ level_info.color }}"
+                             role="progressbar"
+                             style="width: {{ level_info.progress }}%;"
+                             aria-valuenow="{{ level_info.progress }}"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                    <small class="text-{{ level_info.color }}">
+                        <span id="user-points">{{ level_info.points }}</span> pts / {{ level_info.next_level }}
+                    </small>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Messages flash -->
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'info' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer optionnel -->
+    <footer class="mt-5 py-3 bg-dark text-white text-center">
+        <div class="container">
+            <small>Sport Connect - Sove For Tomorrow 2026</small>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

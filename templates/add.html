@@ -1,53 +1,197 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Proposer une activité</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-    <div class="container mt-5">
-        <div class="card mx-auto" style="max-width: 600px;">
-            <div class="card-header">
-                <h3>Nouvelle Activité Sportive</h3>
+{% extends "base.html" %}
+
+{% block title %}Proposer une activité - Sport Connect{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">Nouvelle Activité Sportive</h3>
             </div>
-            <div class="card-body">
-                <form method="post">
+            <div class="card-body p-4">
+                <p class="text-muted mb-4">
+                    Remplissez les informations ci-dessous pour proposer une nouvelle activité sportive.
+                    <strong>Vous gagnerez 20 points en créant cet événement !</strong>
+                </p>
+
+                <form method="post" action="{{ url_for('add') }}">
+                    <!-- Sport proposé -->
                     <div class="mb-3">
-                        <label class="form-label">Votre Prénom (Organisateur)</label>
-                        <input type="text" name="organisateur" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Sport proposé</label>
-                        <select name="sport" class="form-select">
-                            <option>Running</option>
-                            <option>Tennis</option>
-                            <option>Yoga</option>
-                            <option>Football</option>
+                        <label for="sport" class="form-label">Sport proposé *</label>
+                        <select name="sport" id="sport" class="form-select" required>
+                            <option value="">Choisissez un sport...</option>
+                            <option value="Running">Running</option>
+                            <option value="Tennis">Tennis</option>
+                            <option value="Yoga">Yoga</option>
+                            <option value="Football">Football</option>
+                            <option value="Natation">Natation</option>
+                            <option value="Basketball">Basketball</option>
+                            <option value="Cyclisme">Cyclisme</option>
                         </select>
                     </div>
+
+                    <!-- Niveau attendu -->
                     <div class="mb-3">
-                        <label class="form-label">Niveau attendu [cite: 31]</label>
-                        <select name="niveau" class="form-select">
-                            <option>Débutant</option>
-                            <option>Intermédiaire</option>
-                            <option>Expert</option>
+                        <label for="niveau" class="form-label">Niveau attendu *</label>
+                        <select name="niveau" id="niveau" class="form-select" required>
+                            <option value="">Sélectionnez le niveau...</option>
+                            <option value="Débutant">Débutant</option>
+                            <option value="Intermédiaire">Intermédiaire</option>
+                            <option value="Expert">Expert</option>
                         </select>
+                        <small class="form-text text-muted">
+                            Indiquez le niveau requis pour participer
+                        </small>
                     </div>
+
+                    <!-- Lieu -->
                     <div class="mb-3">
-                        <label class="form-label">Lieu & Heure [cite: 33]</label>
-                        <input type="text" name="lieu" class="form-control mb-2" placeholder="Ex: Parc des Princes">
-                        <input type="text" name="date_heure" class="form-control" placeholder="Ex: Samedi 14h00">
+                        <label for="lieu" class="form-label">Lieu *</label>
+                        <input type="text"
+                               name="lieu"
+                               id="lieu"
+                               class="form-control"
+                               placeholder="Ex: Parc des Princes, Paris"
+                               required>
+                        <small class="form-text text-muted">
+                            Indiquez le lieu précis de l'activité
+                        </small>
                     </div>
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" name="accessibilite" value="Oui">
-                        <label class="form-check-label"><strong>Accessible PMR / Handicap</strong> [cite: 34]</label>
+
+                    <!-- Date et heure -->
+                    <div class="mb-3">
+                        <label for="date_heure" class="form-label">Date et heure *</label>
+                        <input type="text"
+                               name="date_heure"
+                               id="date_heure"
+                               class="form-control"
+                               placeholder="Ex: Samedi 14h00 ou 25/01/2026 à 15h00"
+                               required>
+                        <small class="form-text text-muted">
+                            Format libre : date et horaire de l'activité
+                        </small>
                     </div>
-                    <button type="submit" class="btn btn-success w-100">Publier l'annonce</button>
-                    <a href="/" class="btn btn-link w-100 mt-2">Retour</a>
+
+                    <!-- Géolocalisation -->
+                    <div class="mb-3">
+                        <label class="form-label">📍 Géolocalisation (optionnel)</label>
+                        <div class="row g-2">
+                            <div class="col-md-5">
+                                <input type="number"
+                                       step="any"
+                                       name="latitude"
+                                       id="latitude"
+                                       class="form-control"
+                                       placeholder="Latitude (ex: 48.8566)">
+                            </div>
+                            <div class="col-md-5">
+                                <input type="number"
+                                       step="any"
+                                       name="longitude"
+                                       id="longitude"
+                                       class="form-control"
+                                       placeholder="Longitude (ex: 2.3522)">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-outline-primary w-100" onclick="getMyLocation()">
+                                    📍
+                                </button>
+                            </div>
+                        </div>
+                        <small class="form-text text-muted">
+                            Cliquez sur 📍 pour utiliser votre position actuelle, ou sélectionnez un lieu connu ci-dessous
+                        </small>
+                        <div class="mt-2">
+                            <select class="form-select form-select-sm" onchange="setKnownLocation(this.value)">
+                                <option value="">Choisir un lieu connu...</option>
+                                <option value="48.8566,2.3522">Paris - Centre</option>
+                                <option value="45.7640,4.8357">Lyon - Centre</option>
+                                <option value="43.2965,5.3698">Marseille - Vieux Port</option>
+                                <option value="47.2184,-1.5536">Nantes - Centre</option>
+                                <option value="48.5734,-7.7633">Brest - Centre</option>
+                                <option value="43.6108,3.8767">Montpellier - Centre</option>
+                                <option value="44.8378,-0.5792">Bordeaux - Centre</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Accessibilité PMR -->
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input type="checkbox"
+                                   class="form-check-input"
+                                   name="accessibilite"
+                                   id="accessibilite"
+                                   value="Oui">
+                            <label class="form-check-label" for="accessibilite">
+                                <strong>♿ Accessible PMR / Handicap</strong>
+                            </label>
+                            <small class="form-text text-muted d-block mt-1">
+                                Cochez si le lieu est accessible aux personnes à mobilité réduite
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Informations organisateur -->
+                    <div class="alert alert-info">
+                        <strong>👤 Organisateur :</strong> {{ current_user.username }}
+                    </div>
+
+                    <!-- Boutons -->
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            ✓ Publier l'annonce (+20 points)
+                        </button>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                            Annuler
+                        </a>
+                    </div>
                 </form>
             </div>
         </div>
+
+        <!-- Conseils -->
+        <div class="card mt-4 border-0 bg-light">
+            <div class="card-body">
+                <h6 class="card-title">💡 Conseils pour une bonne annonce</h6>
+                <ul class="mb-0 small">
+                    <li>Soyez précis sur le lieu de rendez-vous</li>
+                    <li>Indiquez clairement la date et l'horaire</li>
+                    <li>Choisissez le niveau approprié pour attirer les bons participants</li>
+                    <li>Pensez à l'accessibilité si le lieu le permet</li>
+                </ul>
+            </div>
+        </div>
     </div>
-</body>
-</html>
+</div>
+
+<script>
+// Fonction pour obtenir la géolocalisation actuelle
+function getMyLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                document.getElementById('latitude').value = position.coords.latitude.toFixed(6);
+                document.getElementById('longitude').value = position.coords.longitude.toFixed(6);
+                alert('Position obtenue avec succès !');
+            },
+            error => {
+                alert('Impossible d\'obtenir votre position. Vérifiez les autorisations de géolocalisation.');
+            }
+        );
+    } else {
+        alert('La géolocalisation n\'est pas supportée par votre navigateur.');
+    }
+}
+
+// Fonction pour définir un lieu connu
+function setKnownLocation(value) {
+    if (value) {
+        const [lat, lng] = value.split(',');
+        document.getElementById('latitude').value = lat;
+        document.getElementById('longitude').value = lng;
+    }
+}
+</script>
+{% endblock %}

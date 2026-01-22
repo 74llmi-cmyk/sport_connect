@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Connexion - Sport Connect{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow">
+            <div class="card-body p-5">
+                <h2 class="text-center mb-4">Connexion</h2>
+                <p class="text-center text-muted">Connectez-vous pour accéder à Sport Connect</p>
+
+                <form method="post" action="{{ url_for('login') }}">
+                    <!-- Username -->
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Nom d'utilisateur</label>
+                        <input type="text"
+                               class="form-control"
+                               id="username"
+                               name="username"
+                               required
+                               autofocus
+                               placeholder="Entrez votre nom d'utilisateur">
+                    </div>
+
+                    <!-- Password -->
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Mot de passe</label>
+                        <input type="password"
+                               class="form-control"
+                               id="password"
+                               name="password"
+                               required
+                               placeholder="Entrez votre mot de passe">
+                    </div>
+
+                    <!-- Remember me -->
+                    <div class="mb-3 form-check">
+                        <input type="checkbox"
+                               class="form-check-input"
+                               id="remember"
+                               name="remember"
+                               value="yes">
+                        <label class="form-check-label" for="remember">
+                            Se souvenir de moi
+                        </label>
+                    </div>
+
+                    <!-- Submit button -->
+                    <button type="submit" class="btn btn-primary w-100 mb-3">
+                        Se connecter
+                    </button>
+
+                    <!-- Register link -->
+                    <div class="text-center">
+                        <small class="text-muted">
+                            Pas encore de compte ?
+                            <a href="{{ url_for('register') }}" class="text-decoration-none">Inscrivez-vous ici</a>
+                        </small>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

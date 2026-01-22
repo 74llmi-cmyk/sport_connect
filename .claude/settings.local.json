@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip freeze:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd requirements.txt for stable Python environment and update project documentation\n\n- Add requirements.txt with all project dependencies \\(Flask 3.1.2, Jinja2, Werkzeug, etc.\\)\n- Update .gitignore with comprehensive Python, IDE, and OS exclusions\n- Update README.md with new installation instructions using requirements.txt\n- Change environment directory from venv/ to .venv/ following Python conventions\n\nThis ensures a stable environment where Flask no longer needs manual reinstallation after activating the virtual environment.\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push)",
+      "Bash(python migrations/init_db.py:*)",
+      "Bash(pip install:*)",
+      "Bash(python app.py:*)",
+      "Bash(timeout:*)",
+      "Bash(python migrations/add_geolocation.py:*)"
+    ]
+  }
+}

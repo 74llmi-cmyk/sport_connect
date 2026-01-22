@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}Carte des activités - Sport Connect{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h3>🗺️ Carte des activités</h3>
+    <p class="text-muted">Visualisez les événements sportifs à proximité</p>
+</div>
+
+<!-- Filtres rapides -->
+<div class="row mb-3">
+    <div class="col-md-3">
+        <select id="map-filter-sport" class="form-select form-select-sm" onchange="filterMapMarkers()">
+            <option value="">Tous les sports</option>
+            {% for sport in sports_list %}
+                <option value="{{ sport }}">{{ sport }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select id="map-filter-niveau" class="form-select form-select-sm" onchange="filterMapMarkers()">
+            <option value="">Tous les niveaux</option>
+            <option value="Débutant">Débutant</option>
+            <option value="Intermédiaire">Intermédiaire</option>
+            <option value="Expert">Expert</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <button class="btn btn-sm btn-outline-primary" onclick="centerOnUser()">
+            📍 Me localiser
+        </button>
+    </div>
+    <div class="col-md-3 text-end">
+        <span class="badge bg-secondary">
+            <span id="marker-count">{{ events|length }}</span> événement(s) affiché(s)
+        </span>
+    </div>
+</div>
+
+<!-- Carte interactive -->
+<div id="map" style="height: 600px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"></div>
+
+<!-- Légende -->
+<div class="mt-3">
+    <div class="card">
+        <div class="card-body">
+            <h6 class="card-title">Légende</h6>
+            <div class="row">
+                <div class="col-md-3">
+                    <span style="color: #667eea; font-size: 20px;">●</span> Événements disponibles
+                </div>
+                <div class="col-md-3">
+                    <span style="color: #28a745; font-size: 20px;">●</span> Vous participez
+                </div>
+                <div class="col-md-3">
+                    <span style="color: #ffc107; font-size: 20px;">●</span> Vos événements
+                </div>
+                <div class="col-md-3">
+                    <span style="color: #dc3545; font-size: 20px;">●</span> Votre position
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Inclure Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+{% endblock %}
+
+{% block scripts %}
+<!-- Inclure Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+// Données des événements (transmises depuis Flask)
+const eventsData = {{ events_json|safe }};
+
+// Initialiser la carte centrée sur Paris par défaut
+let map = L.map('map').setView([48.8566, 2.3522], 12);
+
+// Ajouter le fond de carte OpenStreetMap
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 18
+}).addTo(map);
+
+// Stocker tous les marqueurs pour le filtrage
+let markers = [];
+let userMarker = null;
+
+// Icônes personnalisées
+const iconAvailable = L.divIcon({
+    className: 'custom-marker',
+    html: '<div style="background-color: #667eea; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15]
+});
+
+const iconJoined = L.divIcon({
+    className: 'custom-marker',
+    html: '<div style="background-color: #28a745; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15]
+});
+
+const iconOrganizer = L.divIcon({
+    className: 'custom-marker',
+    html: '<div style="background-color: #ffc107; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15]
+});
+
+// Ajouter les marqueurs d'événements
+eventsData.forEach(item => {
+    if (item.event.latitude && item.event.longitude) {
+        // Choisir l'icône selon le statut
+        let icon = iconAvailable;
+        if (item.is_organizer) {
+            icon = iconOrganizer;
+        } else if (item.user_joined) {
+            icon = iconJoined;
+        }
+
+        // Créer le popup avec les infos
+        const popupContent = `
+            <div style="min-width: 200px;">
+                <h6 style="margin-bottom: 10px; color: #667eea;">${item.event.sport}</h6>
+                <p style="margin: 5px 0; font-size: 13px;">
+                    <strong>📍 Lieu:</strong> ${item.event.lieu}<br>
+                    <strong>🕒 Quand:</strong> ${item.event.date_heure}<br>
+                    <strong>👤 Organisateur:</strong> ${item.organizer_name}<br>
+                    <strong>📊 Niveau:</strong> <span class="badge bg-info">${item.event.niveau}</span><br>
+                    <strong>👥 Participants:</strong> ${item.participant_count}
+                </p>
+                ${item.event.accessibilite ? '<p style="margin: 5px 0;"><span class="badge bg-success">♿ Accessible PMR</span></p>' : ''}
+                ${item.user_joined ? '<p style="margin: 5px 0;"><span class="badge bg-success">✓ Vous participez</span></p>' : ''}
+                <a href="/" class="btn btn-sm btn-primary mt-2" style="width: 100%;">Voir les détails</a>
+            </div>
+        `;
+
+        const marker = L.marker([item.event.latitude, item.event.longitude], {icon: icon})
+            .bindPopup(popupContent)
+            .addTo(map);
+
+        // Stocker les infos pour le filtrage
+        marker.eventData = item;
+        markers.push(marker);
+    }
+});
+
+// Ajuster la vue pour montrer tous les marqueurs
+if (markers.length > 0) {
+    const group = new L.featureGroup(markers);
+    map.fitBounds(group.getBounds().pad(0.1));
+}
+
+// Fonction de filtrage
+function filterMapMarkers() {
+    const sportFilter = document.getElementById('map-filter-sport').value;
+    const niveauFilter = document.getElementById('map-filter-niveau').value;
+
+    let visibleCount = 0;
+
+    markers.forEach(marker => {
+        const event = marker.eventData.event;
+        let show = true;
+
+        if (sportFilter && event.sport !== sportFilter) {
+            show = false;
+        }
+
+        if (niveauFilter && event.niveau !== niveauFilter) {
+            show = false;
+        }
+
+        if (show) {
+            marker.addTo(map);
+            visibleCount++;
+        } else {
+            map.removeLayer(marker);
+        }
+    });
+
+    // Mettre à jour le compteur
+    document.getElementById('marker-count').innerText = visibleCount;
+}
+
+// Fonction de géolocalisation
+function centerOnUser() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+
+                // Centrer la carte
+                map.setView([lat, lng], 14);
+
+                // Ajouter/mettre à jour le marqueur utilisateur
+                if (userMarker) {
+                    map.removeLayer(userMarker);
+                }
+
+                const userIcon = L.divIcon({
+                    className: 'custom-marker',
+                    html: '<div style="background-color: #dc3545; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>',
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                });
+
+                userMarker = L.marker([lat, lng], {icon: userIcon})
+                    .bindPopup('<strong>📍 Vous êtes ici</strong>')
+                    .addTo(map);
+
+                showAlert('Position obtenue avec succès !', 'success');
+            },
+            error => {
+                showAlert('Impossible d\'obtenir votre position.', 'warning');
+            }
+        );
+    } else {
+        showAlert('La géolocalisation n\'est pas supportée par votre navigateur.', 'danger');
+    }
+}
+
+// Fonction helper pour les alertes (réutilise celle de main.js)
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.role = 'alert';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+
+    const container = document.querySelector('.container');
+    if (container) {
+        container.insertBefore(alertDiv, container.firstChild);
+        setTimeout(() => {
+            alertDiv.classList.remove('show');
+            setTimeout(() => alertDiv.remove(), 150);
+        }, 3000);
+    }
+}
+</script>
+{% endblock %}
