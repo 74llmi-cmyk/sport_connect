@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Modifier' if place else 'Ajouter' }} un lieu - Administration{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow">
+            <div class="card-header bg-dark text-white">
+                <h3 class="mb-0">{{ 'Modifier' if place else 'Ajouter' }} un lieu de pratique</h3>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    <div class="row">
+                        <!-- Colonne gauche : Informations -->
+                        <div class="col-md-6">
+                            <h5 class="mb-3">Informations du lieu</h5>
+
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Nom du lieu *</label>
+                                <input type="text"
+                                       name="name"
+                                       id="name"
+                                       class="form-control"
+                                       placeholder="Ex: Stade Municipal, Piscine Olympique..."
+                                       value="{{ place.name if place else '' }}"
+                                       required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="city" class="form-label">Ville *</label>
+                                <input type="text"
+                                       name="city"
+                                       id="city"
+                                       class="form-control"
+                                       placeholder="Ex: Paris, Lyon, Marseille..."
+                                       value="{{ place.city if place else '' }}"
+                                       required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="address" class="form-label">Adresse complète</label>
+                                <input type="text"
+                                       name="address"
+                                       id="address"
+                                       class="form-control"
+                                       placeholder="Ex: 15 rue de la Paix, 75001 Paris"
+                                       value="{{ place.address if place else '' }}">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="sports" class="form-label">Sports disponibles</label>
+                                <input type="text"
+                                       name="sports"
+                                       id="sports"
+                                       class="form-control"
+                                       placeholder="Ex: Football, Tennis, Running (séparés par virgules)"
+                                       value="{{ place.sports if place else '' }}">
+                                <small class="form-text text-muted">Séparez les sports par des virgules</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input type="checkbox"
+                                           class="form-check-input"
+                                           name="is_pmr_accessible"
+                                           id="is_pmr_accessible"
+                                           {{ 'checked' if place and place.is_pmr_accessible else '' }}>
+                                    <label class="form-check-label" for="is_pmr_accessible">
+                                        Accessible PMR / Handicap
+                                    </label>
+                                </div>
+                            </div>
+
+                            <h5 class="mb-3 mt-4">Image du lieu</h5>
+
+                            <div class="mb-3">
+                                <label for="image_url" class="form-label">URL de l'image</label>
+                                <input type="url"
+                                       name="image_url"
+                                       id="image_url"
+                                       class="form-control"
+                                       placeholder="https://example.com/image.jpg"
+                                       value="{{ place.image_url if place and place.image_url else '' }}"
+                                       onchange="previewImage(this.value)">
+                                <small class="form-text text-muted">Lien vers une image du lieu (format JPG, PNG recommandé)</small>
+                            </div>
+
+                            <div class="mb-3" id="image_preview_container" style="{{ 'display:block' if place and place.image_url else 'display:none' }}">
+                                <label class="form-label">Aperçu</label>
+                                <img id="image_preview"
+                                     src="{{ place.image_url if place and place.image_url else '' }}"
+                                     class="img-fluid rounded"
+                                     style="max-height: 150px; object-fit: cover;"
+                                     onerror="this.style.display='none'">
+                            </div>
+
+                            <h5 class="mb-3 mt-4">Transports en commun</h5>
+
+                            <div class="mb-3">
+                                <label for="transport_station" class="form-label">Station la plus proche</label>
+                                <input type="text"
+                                       name="transport_station"
+                                       id="transport_station"
+                                       class="form-control"
+                                       placeholder="Ex: Gare du Nord, Châtelet..."
+                                       value="{{ place.transport_station if place else '' }}">
+                            </div>
+
+                            <!-- Lignes de transport (checkboxes) -->
+                            <input type="hidden" name="transport_lines" id="transport_lines" value="{{ place.transport_lines if place else '' }}">
+
+                            <!-- Métro -->
+                            <div class="mb-3">
+                                <label class="form-label">Lignes de Métro</label>
+                                <div class="transport-checkboxes metro-lines">
+                                    {% set metros = ['M1', 'M2', 'M3', 'M3bis', 'M4', 'M5', 'M6', 'M7', 'M7bis', 'M8', 'M9', 'M10', 'M11', 'M12', 'M13', 'M14'] %}
+                                    {% for m in metros %}
+                                    <div class="form-check form-check-inline transport-check">
+                                        <input class="form-check-input line-checkbox" type="checkbox"
+                                               id="line_{{ m }}" value="{{ m }}" data-type="metro"
+                                               onchange="updateTransportLines()">
+                                        <label class="form-check-label line-label line-label-{{ m|lower }}" for="line_{{ m }}">{{ m }}</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- RER -->
+                            <div class="mb-3">
+                                <label class="form-label">Lignes de RER</label>
+                                <div class="transport-checkboxes rer-lines">
+                                    {% set rers = ['RER A', 'RER B', 'RER C', 'RER D', 'RER E'] %}
+                                    {% for r in rers %}
+                                    <div class="form-check form-check-inline transport-check">
+                                        <input class="form-check-input line-checkbox" type="checkbox"
+                                               id="line_{{ r|replace(' ', '_') }}" value="{{ r }}" data-type="rer"
+                                               onchange="updateTransportLines()">
+                                        <label class="form-check-label line-label line-label-rer-{{ r[-1]|lower }}" for="line_{{ r|replace(' ', '_') }}">{{ r }}</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Tramway -->
+                            <div class="mb-3">
+                                <label class="form-label">Lignes de Tramway</label>
+                                <div class="transport-checkboxes tram-lines">
+                                    {% set trams = ['T1', 'T2', 'T3a', 'T3b', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T13'] %}
+                                    {% for t in trams %}
+                                    <div class="form-check form-check-inline transport-check">
+                                        <input class="form-check-input line-checkbox" type="checkbox"
+                                               id="line_{{ t }}" value="{{ t }}" data-type="tram"
+                                               onchange="updateTransportLines()">
+                                        <label class="form-check-label line-label line-label-tram" for="line_{{ t }}">{{ t }}</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Bus -->
+                            <div class="mb-3">
+                                <label class="form-label">Lignes de Bus</label>
+                                <input type="text" id="bus_lines" class="form-control"
+                                       placeholder="Ex: 38, 96, 147 (séparés par des virgules)"
+                                       onchange="updateTransportLines()">
+                                <small class="form-text text-muted">Entrez les numéros de bus séparés par des virgules</small>
+                            </div>
+                        </div>
+
+                        <!-- Colonne droite : Carte -->
+                        <div class="col-md-6">
+                            <h5 class="mb-3">Localisation</h5>
+
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <label for="latitude" class="form-label">Latitude</label>
+                                    <input type="number"
+                                           step="any"
+                                           name="latitude"
+                                           id="latitude"
+                                           class="form-control"
+                                           placeholder="48.8566"
+                                           value="{{ place.latitude if place and place.latitude else '' }}">
+                                </div>
+                                <div class="col-6">
+                                    <label for="longitude" class="form-label">Longitude</label>
+                                    <input type="number"
+                                           step="any"
+                                           name="longitude"
+                                           id="longitude"
+                                           class="form-control"
+                                           placeholder="2.3522"
+                                           value="{{ place.longitude if place and place.longitude else '' }}">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Cliquez sur la carte pour définir la position</label>
+                                <div id="map" class="admin-map"></div>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <small>
+                                    <strong>Astuce :</strong> Cliquez sur la carte pour placer un marqueur.
+                                    Les coordonnées seront automatiquement remplies.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin_places') }}" class="btn btn-outline-secondary">
+                            Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            {{ 'Enregistrer les modifications' if place else 'Créer le lieu' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Leaflet CSS et JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Coordonnées initiales (Paris par défaut ou lieu existant)
+    const initialLat = {{ place.latitude if place and place.latitude else 48.8566 }};
+    const initialLng = {{ place.longitude if place and place.longitude else 2.3522 }};
+    const hasInitialCoords = {{ 'true' if place and place.latitude and place.longitude else 'false' }};
+
+    // Initialiser la carte
+    const map = L.map('map').setView([initialLat, initialLng], hasInitialCoords ? 15 : 6);
+
+    // Ajouter le fond de carte
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Marqueur draggable
+    let marker = null;
+
+    if (hasInitialCoords) {
+        marker = L.marker([initialLat, initialLng], { draggable: true }).addTo(map);
+        setupMarkerEvents(marker);
+    }
+
+    // Clic sur la carte
+    map.on('click', function(e) {
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+
+        // Mettre à jour les champs
+        document.getElementById('latitude').value = lat.toFixed(6);
+        document.getElementById('longitude').value = lng.toFixed(6);
+
+        // Ajouter ou déplacer le marqueur
+        if (marker) {
+            marker.setLatLng(e.latlng);
+        } else {
+            marker = L.marker(e.latlng, { draggable: true }).addTo(map);
+            setupMarkerEvents(marker);
+        }
+    });
+
+    function setupMarkerEvents(m) {
+        m.on('dragend', function(e) {
+            const pos = e.target.getLatLng();
+            document.getElementById('latitude').value = pos.lat.toFixed(6);
+            document.getElementById('longitude').value = pos.lng.toFixed(6);
+        });
+    }
+
+    // Synchroniser les champs avec le marqueur
+    document.getElementById('latitude').addEventListener('change', updateMarkerFromInputs);
+    document.getElementById('longitude').addEventListener('change', updateMarkerFromInputs);
+
+    function updateMarkerFromInputs() {
+        const lat = parseFloat(document.getElementById('latitude').value);
+        const lng = parseFloat(document.getElementById('longitude').value);
+
+        if (!isNaN(lat) && !isNaN(lng)) {
+            if (marker) {
+                marker.setLatLng([lat, lng]);
+            } else {
+                marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+                setupMarkerEvents(marker);
+            }
+            map.setView([lat, lng], 15);
+        }
+    }
+});
+
+// Fonction pour prévisualiser l'image
+function previewImage(url) {
+    const container = document.getElementById('image_preview_container');
+    const img = document.getElementById('image_preview');
+
+    if (url) {
+        img.src = url;
+        img.style.display = 'block';
+        container.style.display = 'block';
+    } else {
+        container.style.display = 'none';
+    }
+}
+
+// Fonction pour mettre à jour le champ transport_lines
+function updateTransportLines() {
+    const checkboxes = document.querySelectorAll('.line-checkbox:checked');
+    const busInput = document.getElementById('bus_lines');
+
+    let lines = [];
+
+    // Ajouter les lignes cochées
+    checkboxes.forEach(cb => {
+        lines.push(cb.value);
+    });
+
+    // Ajouter les bus
+    if (busInput.value.trim()) {
+        const buses = busInput.value.split(',').map(b => 'Bus ' + b.trim()).filter(b => b !== 'Bus ');
+        lines = lines.concat(buses);
+    }
+
+    document.getElementById('transport_lines').value = lines.join(', ');
+}
+
+// Fonction pour initialiser les cases à cocher depuis les données existantes
+function initTransportCheckboxes() {
+    const transportLines = document.getElementById('transport_lines').value;
+    if (!transportLines) return;
+
+    const lines = transportLines.split(',').map(l => l.trim());
+    const buses = [];
+
+    lines.forEach(line => {
+        // Chercher la checkbox correspondante
+        const checkbox = document.querySelector(`.line-checkbox[value="${line}"]`);
+        if (checkbox) {
+            checkbox.checked = true;
+        } else if (line.startsWith('Bus ')) {
+            // C'est une ligne de bus
+            buses.push(line.replace('Bus ', ''));
+        }
+    });
+
+    // Remplir le champ bus
+    if (buses.length > 0) {
+        document.getElementById('bus_lines').value = buses.join(', ');
+    }
+}
+
+// Initialiser au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    initTransportCheckboxes();
+});
+</script>
+{% endblock %}

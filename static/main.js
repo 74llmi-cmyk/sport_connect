@@ -7,8 +7,8 @@
  * Rejoindre un événement
  * @param {number} eventId - ID de l'événement
  */
-function joinEvent(eventId) {
-    const button = event.target;
+function joinEvent(eventId, btn) {
+    const button = btn || document.activeElement;
     const originalText = button.innerText;
 
     // Désactiver le bouton pendant la requête
@@ -56,12 +56,12 @@ function joinEvent(eventId) {
  * Quitter un événement
  * @param {number} eventId - ID de l'événement
  */
-function leaveEvent(eventId) {
+function leaveEvent(eventId, btn) {
     if (!confirm('Êtes-vous sûr de vouloir quitter cet événement ? Vous perdrez vos points.')) {
         return;
     }
 
-    const button = event.target;
+    const button = btn || document.activeElement;
     const originalText = button.innerText;
 
     button.disabled = true;
@@ -106,12 +106,12 @@ function leaveEvent(eventId) {
  * Annuler un événement (organisateur seulement)
  * @param {number} eventId - ID de l'événement
  */
-function cancelEvent(eventId) {
+function cancelEvent(eventId, btn) {
     if (!confirm('Êtes-vous sûr de vouloir annuler cet événement ? Cette action est irréversible.')) {
         return;
     }
 
-    const button = event.target;
+    const button = btn || document.activeElement;
     const originalText = button.innerText;
 
     button.disabled = true;

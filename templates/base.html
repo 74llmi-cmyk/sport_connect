@@ -42,22 +42,34 @@
                             ➕ Proposer
                         </a>
                     </li>
+                    {% if current_user.is_admin %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-warning" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Admin
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                            <li><a class="dropdown-item" href="{{ url_for('admin_places') }}">Lieux</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin_events') }}">Activités</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin_users') }}">Utilisateurs</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
                 </ul>
             </div>
             {% endif %}
 
             {% if current_user.is_authenticated %}
             <!-- Gamification bar -->
-            <div class="d-flex align-items-center text-white ms-auto">
+            <div class="d-flex align-items-center text-white ms-auto user-info-bar">
                 <!-- Avatar et informations utilisateur -->
                 <div class="dropdown">
-                    <button class="btn btn-link text-white text-decoration-none dropdown-toggle"
+                    <button class="btn btn-link text-white text-decoration-none dropdown-toggle p-0"
                             type="button"
                             id="userDropdown"
                             data-bs-toggle="dropdown"
                             aria-expanded="false">
                         <!-- Avatar cercle avec initiales -->
-                        <span class="avatar-circle me-2" style="background-color: {{ current_user.avatar_color }};">
+                        <span class="avatar-circle me-1 me-md-2" style="background-color: {{ current_user.avatar_color }};">
                             {{ current_user.get_initials() }}
                         </span>
                         <span class="d-none d-md-inline">{{ current_user.username }}</span>
@@ -69,11 +81,11 @@
                     </ul>
                 </div>
 
-                <!-- Barre de gamification -->
-                <div class="ms-3 text-end">
+                <!-- Barre de gamification (cachée sur mobile) -->
+                <div class="ms-2 ms-md-3 text-end d-none d-sm-block">
                     {% set level_info = current_user.get_level_info() %}
-                    <small class="d-block text-muted">{{ level_info.name }}</small>
-                    <div class="progress" style="width: 150px; height: 10px;">
+                    <small class="d-block text-muted" style="font-size: 10px;">{{ level_info.name }}</small>
+                    <div class="progress" style="width: 100px; height: 8px;">
                         <div class="progress-bar bg-{{ level_info.color }}"
                              role="progressbar"
                              style="width: {{ level_info.progress }}%;"
@@ -82,8 +94,8 @@
                              aria-valuemax="100">
                         </div>
                     </div>
-                    <small class="text-{{ level_info.color }}">
-                        <span id="user-points">{{ level_info.points }}</span> pts / {{ level_info.next_level }}
+                    <small class="text-{{ level_info.color }}" style="font-size: 10px;">
+                        <span id="user-points">{{ level_info.points }}</span> pts
                     </small>
                 </div>
             </div>

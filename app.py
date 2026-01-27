@@ -1,11 +1,14 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
 import sqlite3
 import random
 
-# Import du modèle User
-from models import User, get_user_by_id, get_user_by_username, create_user, update_user_points
+# Import du modèle User et des fonctions places
+from models import (User, get_user_by_id, get_user_by_username, create_user, update_user_points,
+                    get_all_places, get_place_by_id, create_place, update_place, delete_place,
+                    toggle_place_active)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'votre-cle-secrete-a-changer-en-production-sft2026'
@@ -24,8 +27,20 @@ def load_user(user_id):
     return get_user_by_id(user_id)
 
 
+def admin_required(f):
+    """Décorateur pour protéger les routes admin"""
+    @wraps(f)
+    @login_required
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_admin:
+            flash('Accès réservé aux administrateurs.', 'error')
+            return redirect(url_for('index'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 def init_db():
-    """Initialise la base de données avec la table events"""
+    """Initialise la base de données avec les tables nécessaires"""
     conn = sqlite3.connect('database.db')
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS events
@@ -36,6 +51,15 @@ def init_db():
                   lieu TEXT,
                   date_heure TEXT,
                   accessibilite TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS messages
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  event_id INTEGER NOT NULL,
+                  user_id INTEGER NOT NULL,
+                  username TEXT NOT NULL,
+                  content TEXT NOT NULL,
+                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
+                  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)''')
     conn.commit()
     conn.close()
 
@@ -118,7 +142,8 @@ def login():
                 username=user_data['username'],
                 email=user_data['email'],
                 points=user_data['points'],
-                avatar_color=user_data['avatar_color']
+                avatar_color=user_data['avatar_color'],
+                is_admin=bool(user_data.get('is_admin', 0))
             )
             login_user(user, remember=remember)
 
@@ -191,6 +216,7 @@ def index():
     sport_filter = request.args.get('sport', '').strip()
     niveau_filter = request.args.get('niveau', '').strip()
     lieu_filter = request.args.get('lieu', '').strip()
+    genre_filter = request.args.get('genre', '').strip()
 
     conn = sqlite3.connect('database.db')
     conn.row_factory = sqlite3.Row
@@ -211,6 +237,10 @@ def index():
     if lieu_filter:
         query += " AND lieu LIKE ?"
         params.append(f'%{lieu_filter}%')
+
+    if genre_filter:
+        query += " AND genre = ?"
+        params.append(genre_filter)
 
     query += " ORDER BY id DESC"
 
@@ -251,15 +281,18 @@ def index():
     # Liste des sports disponibles (hardcodé pour MVP)
     sports_list = ['Running', 'Tennis', 'Yoga', 'Football', 'Natation', 'Basketball', 'Cyclisme']
     niveaux_list = ['Débutant', 'Intermédiaire', 'Expert']
+    genres_list = ['Mixte', 'Homme', 'Femme']
 
     return render_template('index.html',
                          events=event_list,
                          sports_list=sports_list,
                          niveaux_list=niveaux_list,
+                         genres_list=genres_list,
                          filters={
                              'sport': sport_filter,
                              'niveau': niveau_filter,
-                             'lieu': lieu_filter
+                             'lieu': lieu_filter,
+                             'genre': genre_filter
                          })
 
 
@@ -331,16 +364,48 @@ def map_view():
 @login_required
 def add():
     """Créer un nouvel événement"""
+    # Récupérer les lieux pour le menu déroulant
+    places = get_all_places(active_only=True)
+
     if request.method == 'POST':
         sport = request.form['sport']
         niveau = request.form['niveau']
-        lieu = request.form['lieu']
         date_heure = request.form['date_heure']
         accessibilite = request.form.get('accessibilite')
+        genre = request.form.get('genre', 'Mixte')
 
-        # Récupérer les coordonnées (optionnelles)
+        # Gestion du lieu (prédéfini ou personnalisé)
+        place_id = request.form.get('place_id')
+        lieu_custom = request.form.get('lieu_custom', '').strip()
+
+        # Récupérer les coordonnées et transports
         latitude = request.form.get('latitude')
         longitude = request.form.get('longitude')
+        transport_station = request.form.get('transport_station', '').strip() or None
+        transport_lines = request.form.get('transport_lines', '').strip() or None
+
+        # Si un lieu prédéfini est sélectionné
+        if place_id and place_id != 'other':
+            place = get_place_by_id(int(place_id))
+            if place:
+                lieu = place['name'] + (f", {place['city']}" if place['city'] else "")
+                # Utiliser les coordonnées et transports du lieu si non renseignés
+                if not latitude and place['latitude']:
+                    latitude = place['latitude']
+                if not longitude and place['longitude']:
+                    longitude = place['longitude']
+                if not transport_station and place['transport_station']:
+                    transport_station = place['transport_station']
+                if not transport_lines and place['transport_lines']:
+                    transport_lines = place['transport_lines']
+                if not accessibilite and place['is_pmr_accessible']:
+                    accessibilite = 'Oui'
+            else:
+                lieu = lieu_custom
+                place_id = None
+        else:
+            lieu = lieu_custom
+            place_id = None
 
         # Convertir en float ou None si vide
         try:
@@ -353,9 +418,9 @@ def add():
         conn = sqlite3.connect('database.db')
         c = conn.cursor()
         c.execute("""INSERT INTO events
-                     (organisateur, sport, niveau, lieu, date_heure, accessibilite, organizer_id, latitude, longitude)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                  (current_user.username, sport, niveau, lieu, date_heure, accessibilite, current_user.id, latitude, longitude))
+                     (organisateur, sport, niveau, lieu, date_heure, accessibilite, organizer_id, latitude, longitude, transport_station, transport_lines, place_id, genre)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                  (current_user.username, sport, niveau, lieu, date_heure, accessibilite, current_user.id, latitude, longitude, transport_station, transport_lines, place_id, genre))
         conn.commit()
         conn.close()
 
@@ -365,7 +430,7 @@ def add():
         flash(f'Événement "{sport}" créé avec succès ! +20 points', 'success')
         return redirect(url_for('index'))
 
-    return render_template('add.html')
+    return render_template('add.html', places=places)
 
 
 # ===========================
@@ -502,6 +567,429 @@ def cancel_event(event_id):
         conn.rollback()
         conn.close()
         return jsonify({'success': False, 'message': str(e)}), 500
+
+
+# ===========================
+# ROUTES ADMINISTRATION
+# ===========================
+
+@app.route('/admin/places')
+@admin_required
+def admin_places():
+    """Liste des lieux de pratique sportive (admin)"""
+    places = get_all_places(active_only=False)
+    return render_template('admin/places_list.html', places=places)
+
+
+@app.route('/admin/places/add', methods=['GET', 'POST'])
+@admin_required
+def admin_add_place():
+    """Ajouter un nouveau lieu (admin)"""
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        city = request.form.get('city', '').strip()
+        address = request.form.get('address', '').strip() or None
+        sports = request.form.get('sports', '').strip() or None
+        is_pmr = request.form.get('is_pmr_accessible') == 'on'
+        transport_station = request.form.get('transport_station', '').strip() or None
+        transport_lines = request.form.get('transport_lines', '').strip() or None
+        image_url = request.form.get('image_url', '').strip() or None
+
+        # Coordonnées
+        try:
+            latitude = float(request.form.get('latitude')) if request.form.get('latitude') else None
+            longitude = float(request.form.get('longitude')) if request.form.get('longitude') else None
+        except (ValueError, TypeError):
+            latitude = None
+            longitude = None
+
+        if not name or not city:
+            flash('Le nom et la ville sont obligatoires.', 'error')
+            return render_template('admin/place_form.html', place=None)
+
+        place_id = create_place(
+            name=name, city=city, address=address,
+            latitude=latitude, longitude=longitude,
+            sports=sports, is_pmr_accessible=is_pmr,
+            transport_station=transport_station, transport_lines=transport_lines,
+            image_url=image_url
+        )
+
+        flash(f'Lieu "{name}" créé avec succès !', 'success')
+        return redirect(url_for('admin_places'))
+
+    return render_template('admin/place_form.html', place=None)
+
+
+@app.route('/admin/places/<int:place_id>/edit', methods=['GET', 'POST'])
+@admin_required
+def admin_edit_place(place_id):
+    """Modifier un lieu existant (admin)"""
+    place = get_place_by_id(place_id)
+
+    if not place:
+        flash('Lieu introuvable.', 'error')
+        return redirect(url_for('admin_places'))
+
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        city = request.form.get('city', '').strip()
+        address = request.form.get('address', '').strip() or None
+        sports = request.form.get('sports', '').strip() or None
+        is_pmr = request.form.get('is_pmr_accessible') == 'on'
+        transport_station = request.form.get('transport_station', '').strip() or None
+        transport_lines = request.form.get('transport_lines', '').strip() or None
+        image_url = request.form.get('image_url', '').strip() or None
+
+        # Coordonnées
+        try:
+            latitude = float(request.form.get('latitude')) if request.form.get('latitude') else None
+            longitude = float(request.form.get('longitude')) if request.form.get('longitude') else None
+        except (ValueError, TypeError):
+            latitude = None
+            longitude = None
+
+        if not name or not city:
+            flash('Le nom et la ville sont obligatoires.', 'error')
+            return render_template('admin/place_form.html', place=place)
+
+        update_place(
+            place_id=place_id, name=name, city=city, address=address,
+            latitude=latitude, longitude=longitude,
+            sports=sports, is_pmr_accessible=is_pmr,
+            transport_station=transport_station, transport_lines=transport_lines,
+            image_url=image_url
+        )
+
+        flash(f'Lieu "{name}" modifié avec succès !', 'success')
+        return redirect(url_for('admin_places'))
+
+    return render_template('admin/place_form.html', place=place)
+
+
+@app.route('/admin/places/<int:place_id>/toggle', methods=['POST'])
+@admin_required
+def admin_toggle_place(place_id):
+    """Activer/désactiver un lieu (admin)"""
+    new_status = toggle_place_active(place_id)
+
+    if new_status is not None:
+        status_text = 'activé' if new_status else 'désactivé'
+        flash(f'Lieu {status_text} avec succès.', 'success')
+    else:
+        flash('Lieu introuvable.', 'error')
+
+    return redirect(url_for('admin_places'))
+
+
+@app.route('/admin/places/<int:place_id>/delete', methods=['POST'])
+@admin_required
+def admin_delete_place(place_id):
+    """Supprimer un lieu (admin)"""
+    place = get_place_by_id(place_id)
+
+    if place:
+        delete_place(place_id)
+        flash(f'Lieu "{place["name"]}" supprimé.', 'success')
+    else:
+        flash('Lieu introuvable.', 'error')
+
+    return redirect(url_for('admin_places'))
+
+
+@app.route('/api/places')
+@login_required
+def api_places():
+    """API pour récupérer les lieux actifs (pour le formulaire d'ajout)"""
+    places = get_all_places(active_only=True)
+    return jsonify(places)
+
+
+# ===========================
+# API CHAT
+# ===========================
+
+@app.route('/api/event/<int:event_id>/messages')
+@login_required
+def get_event_messages(event_id):
+    """Récupérer les messages d'un événement"""
+    # Vérifier que l'utilisateur participe à l'événement
+    conn = sqlite3.connect('database.db')
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+
+    c.execute("SELECT id FROM participations WHERE event_id = ? AND user_id = ?",
+              (event_id, current_user.id))
+    if not c.fetchone():
+        # Vérifier si l'utilisateur est l'organisateur
+        c.execute("SELECT organizer_id FROM events WHERE id = ?", (event_id,))
+        event = c.fetchone()
+        if not event or event['organizer_id'] != current_user.id:
+            conn.close()
+            return jsonify({'error': 'Non autorisé'}), 403
+
+    # Récupérer les messages (paramètre since pour polling)
+    since_id = request.args.get('since', 0, type=int)
+
+    c.execute("""
+        SELECT m.*, u.avatar_color
+        FROM messages m
+        LEFT JOIN users u ON m.user_id = u.id
+        WHERE m.event_id = ? AND m.id > ?
+        ORDER BY m.created_at ASC
+    """, (event_id, since_id))
+
+    messages = []
+    for row in c.fetchall():
+        messages.append({
+            'id': row['id'],
+            'user_id': row['user_id'],
+            'username': row['username'],
+            'content': row['content'],
+            'created_at': row['created_at'],
+            'avatar_color': row['avatar_color'] or '#6c757d',
+            'is_mine': row['user_id'] == current_user.id
+        })
+
+    conn.close()
+    return jsonify({'messages': messages})
+
+
+@app.route('/api/event/<int:event_id>/messages', methods=['POST'])
+@login_required
+def send_event_message(event_id):
+    """Envoyer un message dans un événement"""
+    conn = sqlite3.connect('database.db')
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+
+    # Vérifier que l'utilisateur participe ou est organisateur
+    c.execute("SELECT id FROM participations WHERE event_id = ? AND user_id = ?",
+              (event_id, current_user.id))
+    is_participant = c.fetchone() is not None
+
+    c.execute("SELECT organizer_id FROM events WHERE id = ?", (event_id,))
+    event = c.fetchone()
+    is_organizer = event and event['organizer_id'] == current_user.id
+
+    if not is_participant and not is_organizer:
+        conn.close()
+        return jsonify({'error': 'Non autorisé'}), 403
+
+    content = request.json.get('content', '').strip()
+    if not content:
+        conn.close()
+        return jsonify({'error': 'Message vide'}), 400
+
+    # Insérer le message
+    c.execute("""
+        INSERT INTO messages (event_id, user_id, username, content)
+        VALUES (?, ?, ?, ?)
+    """, (event_id, current_user.id, current_user.username, content))
+
+    message_id = c.lastrowid
+    conn.commit()
+    conn.close()
+
+    return jsonify({
+        'success': True,
+        'message': {
+            'id': message_id,
+            'user_id': current_user.id,
+            'username': current_user.username,
+            'content': content,
+            'avatar_color': current_user.avatar_color,
+            'is_mine': True
+        }
+    })
+
+
+# ===========================
+# ADMIN - GESTION DES ACTIVITÉS
+# ===========================
+
+@app.route('/admin/events')
+@admin_required
+def admin_events():
+    """Liste des événements (admin)"""
+    conn = sqlite3.connect('database.db')
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+
+    c.execute("""
+        SELECT e.*, u.username as organizer_name
+        FROM events e
+        LEFT JOIN users u ON e.organizer_id = u.id
+        ORDER BY e.id DESC
+    """)
+    events = c.fetchall()
+
+    # Compter les participants pour chaque événement
+    events_list = []
+    for event in events:
+        c.execute("SELECT COUNT(*) as count FROM participations WHERE event_id = ?", (event['id'],))
+        participant_count = c.fetchone()['count']
+        events_list.append({
+            'event': dict(event),
+            'participant_count': participant_count
+        })
+
+    conn.close()
+    return render_template('admin/events_list.html', events=events_list)
+
+
+@app.route('/admin/events/<int:event_id>/delete', methods=['POST'])
+@admin_required
+def admin_delete_event(event_id):
+    """Supprimer un événement (admin)"""
+    conn = sqlite3.connect('database.db')
+    c = conn.cursor()
+
+    # Récupérer l'événement
+    c.execute("SELECT sport FROM events WHERE id = ?", (event_id,))
+    event = c.fetchone()
+
+    if event:
+        # Supprimer les participations associées
+        c.execute("DELETE FROM participations WHERE event_id = ?", (event_id,))
+        # Supprimer l'événement
+        c.execute("DELETE FROM events WHERE id = ?", (event_id,))
+        conn.commit()
+        flash(f'Événement supprimé avec succès.', 'success')
+    else:
+        flash('Événement introuvable.', 'error')
+
+    conn.close()
+    return redirect(url_for('admin_events'))
+
+
+@app.route('/admin/events/<int:event_id>/toggle-cancel', methods=['POST'])
+@admin_required
+def admin_toggle_cancel_event(event_id):
+    """Annuler/réactiver un événement (admin)"""
+    conn = sqlite3.connect('database.db')
+    c = conn.cursor()
+
+    c.execute("UPDATE events SET is_cancelled = NOT is_cancelled WHERE id = ?", (event_id,))
+    c.execute("SELECT is_cancelled FROM events WHERE id = ?", (event_id,))
+    result = c.fetchone()
+
+    conn.commit()
+    conn.close()
+
+    if result:
+        status = 'annulé' if result[0] else 'réactivé'
+        flash(f'Événement {status}.', 'success')
+    else:
+        flash('Événement introuvable.', 'error')
+
+    return redirect(url_for('admin_events'))
+
+
+# ===========================
+# ADMIN - GESTION DES UTILISATEURS
+# ===========================
+
+@app.route('/admin/users')
+@admin_required
+def admin_users():
+    """Liste des utilisateurs (admin)"""
+    conn = sqlite3.connect('database.db')
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+
+    c.execute("""
+        SELECT u.*,
+               (SELECT COUNT(*) FROM events WHERE organizer_id = u.id) as events_count,
+               (SELECT COUNT(*) FROM participations WHERE user_id = u.id) as participations_count
+        FROM users u
+        ORDER BY u.id DESC
+    """)
+    users = c.fetchall()
+
+    conn.close()
+    return render_template('admin/users_list.html', users=users)
+
+
+@app.route('/admin/users/<int:user_id>/toggle-admin', methods=['POST'])
+@admin_required
+def admin_toggle_admin(user_id):
+    """Promouvoir/rétrograder un utilisateur admin (admin)"""
+    # Empêcher de se rétrograder soi-même
+    if user_id == current_user.id:
+        flash('Vous ne pouvez pas modifier votre propre statut admin.', 'error')
+        return redirect(url_for('admin_users'))
+
+    conn = sqlite3.connect('database.db')
+    c = conn.cursor()
+
+    c.execute("UPDATE users SET is_admin = NOT is_admin WHERE id = ?", (user_id,))
+    c.execute("SELECT username, is_admin FROM users WHERE id = ?", (user_id,))
+    result = c.fetchone()
+
+    conn.commit()
+    conn.close()
+
+    if result:
+        status = 'promu administrateur' if result[1] else 'rétrogradé utilisateur'
+        flash(f'{result[0]} a été {status}.', 'success')
+    else:
+        flash('Utilisateur introuvable.', 'error')
+
+    return redirect(url_for('admin_users'))
+
+
+@app.route('/admin/users/<int:user_id>/delete', methods=['POST'])
+@admin_required
+def admin_delete_user(user_id):
+    """Supprimer un utilisateur (admin)"""
+    # Empêcher de se supprimer soi-même
+    if user_id == current_user.id:
+        flash('Vous ne pouvez pas supprimer votre propre compte.', 'error')
+        return redirect(url_for('admin_users'))
+
+    conn = sqlite3.connect('database.db')
+    c = conn.cursor()
+
+    c.execute("SELECT username FROM users WHERE id = ?", (user_id,))
+    user = c.fetchone()
+
+    if user:
+        # Supprimer les participations
+        c.execute("DELETE FROM participations WHERE user_id = ?", (user_id,))
+        # Annuler les événements organisés (plutôt que supprimer)
+        c.execute("UPDATE events SET is_cancelled = 1 WHERE organizer_id = ?", (user_id,))
+        # Supprimer l'utilisateur
+        c.execute("DELETE FROM users WHERE id = ?", (user_id,))
+        conn.commit()
+        flash(f'Utilisateur "{user[0]}" supprimé.', 'success')
+    else:
+        flash('Utilisateur introuvable.', 'error')
+
+    conn.close()
+    return redirect(url_for('admin_users'))
+
+
+@app.route('/admin/users/<int:user_id>/reset-points', methods=['POST'])
+@admin_required
+def admin_reset_points(user_id):
+    """Remettre les points à zéro (admin)"""
+    conn = sqlite3.connect('database.db')
+    c = conn.cursor()
+
+    c.execute("UPDATE users SET points = 0 WHERE id = ?", (user_id,))
+    c.execute("SELECT username FROM users WHERE id = ?", (user_id,))
+    result = c.fetchone()
+
+    conn.commit()
+    conn.close()
+
+    if result:
+        flash(f'Points de {result[0]} remis à zéro.', 'success')
+    else:
+        flash('Utilisateur introuvable.', 'error')
+
+    return redirect(url_for('admin_users'))
 
 
 # ===========================
