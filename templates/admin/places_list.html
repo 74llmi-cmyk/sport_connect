@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Administration - Lieux de pratique{% endblock %}
+
+{% block content %}
+<div class="admin-header mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2>Gestion des Lieux de Pratique</h2>
+        <div>
+            <a href="{{ url_for('admin_events') }}" class="btn btn-outline-secondary me-2">Activités</a>
+            <a href="{{ url_for('admin_users') }}" class="btn btn-outline-secondary me-2">Utilisateurs</a>
+            <a href="{{ url_for('admin_add_place') }}" class="btn btn-success">
+                + Ajouter un lieu
+            </a>
+        </div>
+    </div>
+    <p class="text-muted">Configurez les lieux de pratique sportive disponibles pour les utilisateurs.</p>
+</div>
+
+{% if places %}
+<div class="card shadow">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 admin-table">
+            <thead class="table-dark">
+                <tr>
+                    <th style="width: 80px;">Image</th>
+                    <th>Nom</th>
+                    <th>Ville</th>
+                    <th>Transports</th>
+                    <th class="text-center">PMR</th>
+                    <th class="text-center">Statut</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for place in places %}
+                <tr class="{{ 'table-secondary' if not place.is_active else '' }}">
+                    <td data-label="Image">
+                        {% if place.image_url %}
+                        <img src="{{ place.image_url }}" class="img-thumbnail" style="width: 60px; height: 45px; object-fit: cover;">
+                        {% else %}
+                        <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 60px; height: 45px; font-size: 20px;">
+                            📍
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td data-label="Nom">
+                        <strong>{{ place.name }}</strong>
+                        {% if place.address %}
+                        <br><small class="text-muted">{{ place.address }}</small>
+                        {% endif %}
+                    </td>
+                    <td data-label="Ville">{{ place.city }}</td>
+                    <td data-label="Transports">
+                        {% if place.transport_station or place.transport_lines %}
+                            {% if place.transport_station %}
+                            <small><strong>{{ place.transport_station }}</strong></small><br>
+                            {% endif %}
+                            {% if place.transport_lines %}
+                            <small class="text-muted">{{ place.transport_lines }}</small>
+                            {% endif %}
+                        {% else %}
+                        <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center" data-label="PMR">
+                        {% if place.is_pmr_accessible %}
+                        <span class="badge bg-success">Oui</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Non</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center" data-label="Statut">
+                        {% if place.is_active %}
+                        <span class="badge bg-success">Actif</span>
+                        {% else %}
+                        <span class="badge bg-danger">Inactif</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center" data-label="Actions">
+                        <div class="btn-group btn-group-sm">
+                            <a href="{{ url_for('admin_edit_place', place_id=place.id) }}"
+                               class="btn btn-outline-primary" title="Modifier">
+                                Modifier
+                            </a>
+                            <form action="{{ url_for('admin_toggle_place', place_id=place.id) }}"
+                                  method="POST" class="d-inline">
+                                <button type="submit"
+                                        class="btn btn-outline-{{ 'warning' if place.is_active else 'success' }}"
+                                        title="{{ 'Désactiver' if place.is_active else 'Activer' }}">
+                                    {{ 'Désactiver' if place.is_active else 'Activer' }}
+                                </button>
+                            </form>
+                            <form action="{{ url_for('admin_delete_place', place_id=place.id) }}"
+                                  method="POST" class="d-inline"
+                                  onsubmit="return confirm('Supprimer ce lieu ?');">
+                                <button type="submit" class="btn btn-outline-danger" title="Supprimer">
+                                    Supprimer
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="card shadow">
+    <div class="card-body text-center py-5">
+        <div class="empty-state">
+            <div class="empty-state-icon">📍</div>
+            <h5>Aucun lieu enregistré</h5>
+            <p class="text-muted">Commencez par ajouter des lieux de pratique sportive.</p>
+            <a href="{{ url_for('admin_add_place') }}" class="btn btn-primary">
+                Ajouter un lieu
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="mt-4">
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+        Retour aux activités
+    </a>
+</div>
+{% endblock %}

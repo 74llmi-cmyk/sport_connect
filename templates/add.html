@@ -47,13 +47,52 @@
 
                     <!-- Lieu -->
                     <div class="mb-3">
-                        <label for="lieu" class="form-label">Lieu *</label>
+                        <label for="place_id" class="form-label">Lieu *</label>
+                        <select name="place_id" id="place_id" class="form-select" onchange="onPlaceChange(this)">
+                            <option value="">Choisissez un lieu...</option>
+                            {% for place in places %}
+                            <option value="{{ place.id }}"
+                                    data-lat="{{ place.latitude or '' }}"
+                                    data-lng="{{ place.longitude or '' }}"
+                                    data-station="{{ place.transport_station or '' }}"
+                                    data-lines="{{ place.transport_lines or '' }}"
+                                    data-pmr="{{ '1' if place.is_pmr_accessible else '0' }}"
+                                    data-image="{{ place.image_url or '' }}">
+                                {{ place.name }} - {{ place.city }}
+                            </option>
+                            {% endfor %}
+                            <option value="other">Autre lieu (saisie libre)</option>
+                        </select>
+
+                        <!-- Aperçu du lieu sélectionné -->
+                        <div id="place_preview" class="mt-2" style="display: none;">
+                            <div class="card">
+                                <div class="row g-0">
+                                    <div class="col-4">
+                                        <img id="place_preview_image" src="" class="img-fluid rounded-start" style="height: 100px; object-fit: cover; width: 100%;">
+                                    </div>
+                                    <div class="col-8">
+                                        <div class="card-body py-2">
+                                            <p class="card-text mb-1" id="place_preview_transport"></p>
+                                            <p class="card-text"><small class="text-muted" id="place_preview_pmr"></small></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <small class="form-text text-muted">
+                            Sélectionnez un lieu prédéfini ou choisissez "Autre lieu" pour une saisie libre
+                        </small>
+                    </div>
+
+                    <!-- Lieu personnalisé (affiché si "Autre lieu" sélectionné) -->
+                    <div class="mb-3" id="lieu_custom_container" style="display: none;">
+                        <label for="lieu_custom" class="form-label">Lieu personnalisé *</label>
                         <input type="text"
-                               name="lieu"
-                               id="lieu"
+                               name="lieu_custom"
+                               id="lieu_custom"
                                class="form-control"
-                               placeholder="Ex: Parc des Princes, Paris"
-                               required>
+                               placeholder="Ex: Parc des Princes, Paris">
                         <small class="form-text text-muted">
                             Indiquez le lieu précis de l'activité
                         </small>
@@ -116,6 +155,30 @@
                         </div>
                     </div>
 
+                    <!-- Transports en commun -->
+                    <div class="mb-3">
+                        <label class="form-label">🚇 Transports en commun (optionnel)</label>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <input type="text"
+                                       name="transport_station"
+                                       id="transport_station"
+                                       class="form-control"
+                                       placeholder="Station (ex: Montparnasse)">
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text"
+                                       name="transport_lines"
+                                       id="transport_lines"
+                                       class="form-control"
+                                       placeholder="Lignes (ex: M4, M6, RER B)">
+                            </div>
+                        </div>
+                        <small class="form-text text-muted">
+                            Indiquez la station la plus proche et les lignes disponibles (séparées par des virgules)
+                        </small>
+                    </div>
+
                     <!-- Accessibilité PMR -->
                     <div class="mb-4">
                         <div class="form-check">
@@ -131,6 +194,34 @@
                                 Cochez si le lieu est accessible aux personnes à mobilité réduite
                             </small>
                         </div>
+                    </div>
+
+                    <!-- Genre / Public cible -->
+                    <div class="mb-4">
+                        <label class="form-label"><strong>Public cible</strong></label>
+                        <div class="d-flex gap-4">
+                            <div class="form-check">
+                                <input type="radio" class="form-check-input" name="genre" id="genre_mixte" value="Mixte" checked>
+                                <label class="form-check-label" for="genre_mixte">
+                                    Mixte
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input type="radio" class="form-check-input" name="genre" id="genre_homme" value="Homme">
+                                <label class="form-check-label" for="genre_homme">
+                                    Homme
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input type="radio" class="form-check-input" name="genre" id="genre_femme" value="Femme">
+                                <label class="form-check-label" for="genre_femme">
+                                    Femme
+                                </label>
+                            </div>
+                        </div>
+                        <small class="form-text text-muted">
+                            Indiquez si l'activité est réservée à un public spécifique
+                        </small>
                     </div>
 
                     <!-- Informations organisateur -->
@@ -193,5 +284,79 @@ function setKnownLocation(value) {
         document.getElementById('longitude').value = lng;
     }
 }
+
+// Fonction appelée quand un lieu prédéfini est sélectionné
+function onPlaceChange(select) {
+    const customContainer = document.getElementById('lieu_custom_container');
+    const customInput = document.getElementById('lieu_custom');
+    const placePreview = document.getElementById('place_preview');
+    const selectedOption = select.options[select.selectedIndex];
+
+    if (select.value === 'other') {
+        // Afficher le champ de saisie libre
+        customContainer.style.display = 'block';
+        customInput.required = true;
+        placePreview.style.display = 'none';
+        // Effacer les données pré-remplies
+        document.getElementById('latitude').value = '';
+        document.getElementById('longitude').value = '';
+        document.getElementById('transport_station').value = '';
+        document.getElementById('transport_lines').value = '';
+        document.getElementById('accessibilite').checked = false;
+    } else if (select.value) {
+        // Masquer le champ de saisie libre
+        customContainer.style.display = 'none';
+        customInput.required = false;
+
+        // Auto-remplir les coordonnées et transports
+        const lat = selectedOption.dataset.lat;
+        const lng = selectedOption.dataset.lng;
+        const station = selectedOption.dataset.station;
+        const lines = selectedOption.dataset.lines;
+        const pmr = selectedOption.dataset.pmr;
+        const image = selectedOption.dataset.image;
+
+        if (lat) document.getElementById('latitude').value = lat;
+        if (lng) document.getElementById('longitude').value = lng;
+        if (station) document.getElementById('transport_station').value = station;
+        if (lines) document.getElementById('transport_lines').value = lines;
+        if (pmr === '1') document.getElementById('accessibilite').checked = true;
+
+        // Afficher l'aperçu du lieu
+        if (image || station || lines) {
+            placePreview.style.display = 'block';
+
+            const previewImage = document.getElementById('place_preview_image');
+            if (image) {
+                previewImage.src = image;
+                previewImage.parentElement.style.display = 'block';
+            } else {
+                previewImage.parentElement.style.display = 'none';
+            }
+
+            const transportText = [];
+            if (station) transportText.push('Station: ' + station);
+            if (lines) transportText.push('Lignes: ' + lines);
+            document.getElementById('place_preview_transport').innerHTML = transportText.join('<br>');
+
+            document.getElementById('place_preview_pmr').textContent = pmr === '1' ? 'Accessible PMR' : '';
+        } else {
+            placePreview.style.display = 'none';
+        }
+    } else {
+        // Aucune sélection
+        customContainer.style.display = 'none';
+        customInput.required = false;
+        placePreview.style.display = 'none';
+    }
+}
+
+// Initialisation au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    const placeSelect = document.getElementById('place_id');
+    if (placeSelect) {
+        onPlaceChange(placeSelect);
+    }
+});
 </script>
 {% endblock %}

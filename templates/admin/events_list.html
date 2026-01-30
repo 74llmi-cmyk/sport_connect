@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Administration - Activités{% endblock %}
+
+{% block content %}
+<div class="admin-header mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2>Gestion des Activités</h2>
+        <div>
+            <a href="{{ url_for('admin_places') }}" class="btn btn-outline-secondary me-2">Lieux</a>
+            <a href="{{ url_for('admin_users') }}" class="btn btn-outline-secondary">Utilisateurs</a>
+        </div>
+    </div>
+    <p class="text-muted">Gérez toutes les activités sportives de la plateforme.</p>
+</div>
+
+{% if events %}
+<div class="card shadow">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 admin-table">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Sport</th>
+                    <th>Lieu</th>
+                    <th>Date/Heure</th>
+                    <th>Organisateur</th>
+                    <th class="text-center">Participants</th>
+                    <th class="text-center">Statut</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in events %}
+                {% set event = item.event %}
+                <tr class="{{ 'table-secondary' if event.is_cancelled else '' }}">
+                    <td data-label="ID"><small class="text-muted">#{{ event.id }}</small></td>
+                    <td data-label="Sport">
+                        <strong>{{ event.sport }}</strong>
+                        <br><span class="badge bg-{{ 'info' if event.niveau == 'Débutant' else 'warning' if event.niveau == 'Intermédiaire' else 'danger' }}">{{ event.niveau }}</span>
+                    </td>
+                    <td data-label="Lieu">
+                        {{ event.lieu }}
+                        {% if event.accessibilite %}
+                        <span class="badge bg-success ms-1">PMR</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="Date">{{ event.date_heure }}</td>
+                    <td data-label="Organisateur">
+                        {{ event.organizer_name or event.organisateur }}
+                    </td>
+                    <td class="text-center" data-label="Participants">
+                        <span class="badge bg-primary">{{ item.participant_count }}</span>
+                    </td>
+                    <td class="text-center" data-label="Statut">
+                        {% if event.is_cancelled %}
+                        <span class="badge bg-danger">Annulé</span>
+                        {% else %}
+                        <span class="badge bg-success">Actif</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center" data-label="Actions">
+                        <div class="btn-group btn-group-sm">
+                            <form action="{{ url_for('admin_toggle_cancel_event', event_id=event.id) }}"
+                                  method="POST" class="d-inline">
+                                <button type="submit"
+                                        class="btn btn-outline-{{ 'success' if event.is_cancelled else 'warning' }}"
+                                        title="{{ 'Réactiver' if event.is_cancelled else 'Annuler' }}">
+                                    {{ 'Réactiver' if event.is_cancelled else 'Annuler' }}
+                                </button>
+                            </form>
+                            <form action="{{ url_for('admin_delete_event', event_id=event.id) }}"
+                                  method="POST" class="d-inline"
+                                  onsubmit="return confirm('Supprimer définitivement cet événement et toutes ses participations ?');">
+                                <button type="submit" class="btn btn-outline-danger" title="Supprimer">
+                                    Supprimer
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="mt-3">
+    <small class="text-muted">
+        Total : {{ events|length }} activité(s)
+    </small>
+</div>
+{% else %}
+<div class="card shadow">
+    <div class="card-body text-center py-5">
+        <div class="empty-state">
+            <div class="empty-state-icon">📅</div>
+            <h5>Aucune activité</h5>
+            <p class="text-muted">Il n'y a pas encore d'activités sur la plateforme.</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="mt-4">
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+        Retour aux activités
+    </a>
+</div>
+{% endblock %}

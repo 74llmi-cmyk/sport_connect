@@ -3,165 +3,663 @@
 {% block title %}Activités disponibles - Sport Connect{% endblock %}
 
 {% block content %}
-<!-- En-tête de page -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h3>🏃 Activités disponibles</h3>
-    <a href="{{ url_for('add') }}" class="btn btn-primary">+ Proposer une activité</a>
-</div>
+<!-- Images par sport -->
+{% set sport_images = {
+    'Running': 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=400&h=200&fit=crop',
+    'Tennis': 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=400&h=200&fit=crop',
+    'Yoga': 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=200&fit=crop',
+    'Football': 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&h=200&fit=crop',
+    'Natation': 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=400&h=200&fit=crop',
+    'Basketball': 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400&h=200&fit=crop',
+    'Cyclisme': 'https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=400&h=200&fit=crop'
+} %}
 
-<!-- Section filtres -->
-<div class="filters-section">
-    <h5 class="mb-3">Filtrer les activités</h5>
-    <form method="get" action="{{ url_for('index') }}" id="filter-form">
-        <div class="row g-3">
-            <!-- Filtre par sport -->
-            <div class="col-md-3">
-                <label class="filter-label">Sport</label>
-                <select name="sport" class="form-select" onchange="autoSubmitFilter()">
-                    <option value="">Tous les sports</option>
-                    {% for sport in sports_list %}
-                        <option value="{{ sport }}" {% if filters.sport == sport %}selected{% endif %}>
-                            {{ sport }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <!-- Filtre par niveau -->
-            <div class="col-md-3">
-                <label class="filter-label">Niveau</label>
-                <select name="niveau" class="form-select" onchange="autoSubmitFilter()">
-                    <option value="">Tous les niveaux</option>
-                    {% for niveau in niveaux_list %}
-                        <option value="{{ niveau }}" {% if filters.niveau == niveau %}selected{% endif %}>
-                            {{ niveau }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <!-- Filtre par lieu -->
-            <div class="col-md-4">
-                <label class="filter-label">Lieu</label>
-                <input type="text"
-                       name="lieu"
-                       class="form-control"
-                       placeholder="Rechercher un lieu..."
-                       value="{{ filters.lieu }}">
-            </div>
-
-            <!-- Boutons d'action -->
-            <div class="col-md-2 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary w-100 me-2">Filtrer</button>
-                {% if filters.sport or filters.niveau or filters.lieu %}
-                    <button type="button" class="btn btn-outline-secondary" onclick="resetFilters()">
-                        ✕
-                    </button>
-                {% endif %}
-            </div>
+<!-- Layout principal à 2 colonnes -->
+<div class="main-layout">
+    <!-- Colonne gauche : Activités -->
+    <div class="activities-column">
+        <!-- En-tête de page -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3>🏃 Activités disponibles</h3>
+            <a href="{{ url_for('add') }}" class="btn btn-primary">+ Proposer une activité</a>
         </div>
-    </form>
-</div>
 
-<!-- Liste des événements -->
-<div class="row">
-    {% if events %}
-        {% for item in events %}
-        <div class="col-md-4 mb-4">
-            <div class="card event-card h-100 shadow-sm {% if item.user_joined %}event-joined{% endif %}">
-                <div class="card-body">
-                    <!-- En-tête de la carte -->
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <h5 class="card-title mb-0">{{ item.event.sport }}</h5>
-                        <span class="badge
-                            {% if item.event.niveau == 'Débutant' %}niveau-debutant
-                            {% elif item.event.niveau == 'Intermédiaire' %}niveau-intermediaire
-                            {% else %}niveau-expert{% endif %}">
+        <!-- Section filtres -->
+        <div class="filters-section">
+            <form method="get" action="{{ url_for('index') }}" id="filter-form">
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <select name="sport" class="form-select form-select-sm" onchange="autoSubmitFilter()">
+                            <option value="">Tous les sports</option>
+                            {% for sport in sports_list %}
+                                <option value="{{ sport }}" {% if filters.sport == sport %}selected{% endif %}>
+                                    {{ sport }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="niveau" class="form-select form-select-sm" onchange="autoSubmitFilter()">
+                            <option value="">Tous les niveaux</option>
+                            {% for niveau in niveaux_list %}
+                                <option value="{{ niveau }}" {% if filters.niveau == niveau %}selected{% endif %}>
+                                    {{ niveau }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="genre" class="form-select form-select-sm" onchange="autoSubmitFilter()">
+                            <option value="">Tous publics</option>
+                            {% for genre in genres_list %}
+                                <option value="{{ genre }}" {% if filters.genre == genre %}selected{% endif %}>
+                                    {{ genre }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" name="lieu" class="form-control form-control-sm"
+                               placeholder="Filtrer par lieu..." value="{{ filters.lieu }}">
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Grille des activités -->
+        <div class="activities-grid">
+            {% if events %}
+                {% for item in events %}
+                <div class="activity-card {% if item.user_joined %}event-joined{% endif %}"
+                     onclick="selectActivity({{ item.event.id }}, '{{ item.event.sport }}', '{{ item.event.lieu }}', '{{ item.event.date_heure }}', '{{ item.organizer_name }}', {{ item.event.latitude or 'null' }}, {{ item.event.longitude or 'null' }}, '{{ item.event.accessibilite or '' }}', {{ item.participant_count }}, '{{ item.event.transport_station or '' }}', '{{ item.event.transport_lines or '' }}', {{ 'true' if item.user_joined else 'false' }}, {{ 'true' if item.is_organizer else 'false' }})"
+                     data-event-id="{{ item.event.id }}">
+
+                    <!-- En-tête -->
+                    <div class="activity-card-header">
+                        <span class="activity-sport">{{ item.event.sport }}</span>
+                        <span class="badge {% if item.event.niveau == 'Débutant' %}niveau-debutant{% elif item.event.niveau == 'Intermédiaire' %}niveau-intermediaire{% else %}niveau-expert{% endif %}">
                             {{ item.event.niveau }}
                         </span>
                     </div>
-
-                    <!-- Informations de l'événement -->
-                    <p class="card-text">
-                        <strong>📍 Lieu :</strong> {{ item.event.lieu }}<br>
-                        <strong>🕒 Quand :</strong> {{ item.event.date_heure }}<br>
-                        <strong>👤 Organisateur :</strong> {{ item.organizer_name }}
-                    </p>
-
-                    <!-- Nombre de participants -->
-                    <div class="mb-2">
-                        <span class="badge badge-participant">
-                            👥 {{ item.participant_count }} participant{% if item.participant_count > 1 %}s{% endif %}
-                        </span>
-                    </div>
-
-                    <!-- Badge accessibilité -->
-                    {% if item.event.accessibilite %}
-                    <div class="mb-3">
-                        <span class="accessibility-badge">
-                            ♿ Accessible PMR
-                        </span>
-                    </div>
+                    {% if item.user_joined or item.is_organizer %}
+                    <span class="chat-notification-icon" id="notif-{{ item.event.id }}">
+                        <span class="notif-count">0</span>
+                    </span>
                     {% endif %}
 
-                    <!-- Badge "Déjà inscrit" -->
-                    {% if item.user_joined %}
-                    <div class="mb-2">
-                        <span class="badge badge-joined">
-                            ✓ Vous participez
-                        </span>
-                    </div>
-                    {% endif %}
+                    <!-- Image -->
+                    <img src="{{ sport_images.get(item.event.sport, 'https://images.unsplash.com/photo-1461896836934-68f78c8c46b6?w=400&h=200&fit=crop') }}"
+                         class="activity-card-image" alt="{{ item.event.sport }}">
 
-                    <!-- Boutons d'action -->
-                    <div class="mt-3">
-                        {% if item.is_organizer %}
-                            <!-- Bouton annuler (organisateur) -->
-                            <button onclick="cancelEvent({{ item.event.id }})"
-                                    class="btn btn-cancel-event w-100">
-                                Annuler l'événement
-                            </button>
-                        {% elif item.user_joined %}
-                            <!-- Bouton quitter -->
-                            <button onclick="leaveEvent({{ item.event.id }})"
-                                    class="btn btn-leave w-100">
-                                Quitter le groupe
-                            </button>
-                        {% else %}
-                            <!-- Bouton rejoindre -->
-                            <button onclick="joinEvent({{ item.event.id }})"
-                                    class="btn btn-join w-100">
-                                Rejoindre le groupe
-                            </button>
+                    <!-- Contenu -->
+                    <div class="activity-card-content">
+                        <p class="activity-lieu">📍 {{ item.event.lieu }}</p>
+                        <p class="activity-date">🕒 {{ item.event.date_heure }}</p>
+
+                        <div class="activity-badges">
+                            {% if item.event.genre == 'Homme' %}
+                            <span class="badge-genre badge-genre-homme">&#9794; Homme</span>
+                            {% elif item.event.genre == 'Femme' %}
+                            <span class="badge-genre badge-genre-femme">&#9792; Femme</span>
+                            {% else %}
+                            <span class="badge-genre badge-genre-mixte">&#9893; Mixte</span>
+                            {% endif %}
+                            {% if item.event.accessibilite %}
+                            <span class="badge-pmr">♿ PMR</span>
+                            {% endif %}
+                            {% if item.event.latitude and item.event.longitude %}
+                            <span class="badge-geo">📍 Géolocalisé</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Badge transport -->
+                        {% if item.event.transport_station %}
+                        <div class="activity-transport">
+                            <span class="transport-badge">🚇 {{ item.event.transport_station }}</span>
+                        </div>
                         {% endif %}
+
+                        <!-- Boutons -->
+                        <div class="activity-action">
+                            {% if item.is_organizer %}
+                                <div class="d-flex gap-2">
+                                    <button onclick="event.stopPropagation(); openChatForEvent({{ item.event.id }}, '{{ item.event.sport }}')"
+                                            class="btn btn-primary btn-sm flex-grow-1">
+                                        💬 Chat
+                                    </button>
+                                    <button onclick="event.stopPropagation(); cancelEvent({{ item.event.id }}, this)"
+                                            class="btn btn-cancel-event btn-sm">
+                                        Annuler
+                                    </button>
+                                </div>
+                            {% elif item.user_joined %}
+                                <div class="d-flex gap-2">
+                                    <button onclick="event.stopPropagation(); openChatForEvent({{ item.event.id }}, '{{ item.event.sport }}')"
+                                            class="btn btn-primary btn-sm flex-grow-1">
+                                        💬 Chat
+                                    </button>
+                                    <button onclick="event.stopPropagation(); leaveEvent({{ item.event.id }}, this)"
+                                            class="btn btn-leave btn-sm">
+                                        Quitter
+                                    </button>
+                                </div>
+                            {% else %}
+                                <button onclick="event.stopPropagation(); joinEvent({{ item.event.id }}, this)"
+                                        class="btn btn-join btn-sm w-100">
+                                    Rejoindre
+                                </button>
+                            {% endif %}
+                        </div>
                     </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">🏃</div>
+                    <h4>Aucune activité trouvée</h4>
+                    <p class="text-muted">
+                        {% if filters.sport or filters.niveau or filters.lieu or filters.genre %}
+                            Aucun événement ne correspond à vos critères.
+                            <br><button onclick="resetFilters()" class="btn btn-outline-primary btn-sm mt-2">Réinitialiser</button>
+                        {% else %}
+                            <a href="{{ url_for('add') }}" class="btn btn-primary btn-sm mt-2">+ Proposer une activité</a>
+                        {% endif %}
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Colonne droite : Sidepanel -->
+    <div class="sidepanel" id="sidepanel">
+        <!-- Vue carte (par défaut) -->
+        <div id="sidepanel-map-view">
+            <div class="sidepanel-header">
+                <h5>📍 Trouver un lieu</h5>
+            </div>
+
+            <!-- Filtres du sidepanel -->
+            <div class="sidepanel-filters">
+                <select id="sidepanel-sport" class="form-select form-select-sm mb-2">
+                    <option value="">Activité</option>
+                    {% for sport in sports_list %}
+                        <option value="{{ sport }}">{{ sport }}</option>
+                    {% endfor %}
+                </select>
+                <input type="text" id="sidepanel-lieu" class="form-control form-control-sm" placeholder="Lieu" readonly>
+            </div>
+
+            <!-- Carte interactive -->
+            <div id="sidepanel-map" class="sidepanel-map">
+                <div class="map-placeholder">
+                    <p>🗺️ Sélectionnez une activité pour voir sa localisation</p>
+                </div>
+            </div>
+
+            <!-- Détails de l'activité sélectionnée -->
+            <div id="sidepanel-details" class="sidepanel-details">
+                <div class="no-selection">
+                    <p>👆 Cliquez sur une activité pour voir les détails</p>
                 </div>
             </div>
         </div>
-        {% endfor %}
-    {% else %}
-        <!-- État vide -->
-        <div class="col-12">
-            <div class="empty-state">
-                <div class="empty-state-icon">🏃</div>
-                <h4>Aucune activité trouvée</h4>
-                <p class="text-muted">
-                    {% if filters.sport or filters.niveau or filters.lieu %}
-                        Aucun événement ne correspond à vos critères de recherche.
-                        <br>
-                        <button onclick="resetFilters()" class="btn btn-outline-primary mt-3">
-                            Réinitialiser les filtres
-                        </button>
-                    {% else %}
-                        Soyez le premier à proposer une activité !
-                        <br>
-                        <a href="{{ url_for('add') }}" class="btn btn-primary mt-3">
-                            + Proposer une activité
-                        </a>
-                    {% endif %}
-                </p>
+
+        <!-- Vue Chat (masquée par défaut) -->
+        <div id="sidepanel-chat-view" style="display: none;">
+            <div class="sidepanel-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">💬 Chat <span id="chat-event-name"></span></h5>
+                <button class="btn btn-sm btn-outline-light" onclick="closeChat()">✕ Retour</button>
+            </div>
+
+            <!-- Zone des messages -->
+            <div id="chat-messages" class="chat-messages">
+                <div class="chat-empty">
+                    <p>Aucun message pour le moment.<br>Soyez le premier à écrire !</p>
+                </div>
+            </div>
+
+            <!-- Zone de saisie -->
+            <div class="chat-input-container">
+                <form id="chat-form" onsubmit="sendMessage(event)">
+                    <div class="input-group">
+                        <input type="text" id="chat-input" class="form-control" placeholder="Votre message..." autocomplete="off">
+                        <button type="submit" class="btn btn-primary">Envoyer</button>
+                    </div>
+                </form>
             </div>
         </div>
-    {% endif %}
+    </div>
 </div>
+
+<!-- Leaflet CSS & JS pour la carte -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+// Variable pour stocker l'activité sélectionnée et la carte
+let selectedActivity = null;
+let sidepanelMap = null;
+let mapMarker = null;
+
+// Fonction pour soumettre automatiquement le formulaire de filtre
+function autoSubmitFilter() {
+    document.getElementById('filter-form').submit();
+}
+
+// Fonction pour réinitialiser les filtres
+function resetFilters() {
+    window.location.href = '{{ url_for("index") }}';
+}
+
+// Fonction pour sélectionner une activité
+function selectActivity(id, sport, lieu, dateHeure, organizer, lat, lng, accessibilite, participants, transportStation, transportLines, userJoined, isOrganizer) {
+    // Mettre à jour l'état sélectionné
+    selectedActivity = { id, sport, lieu, dateHeure, organizer, lat, lng, accessibilite, participants, transportStation, transportLines, userJoined, isOrganizer };
+
+    // Mettre en surbrillance la carte sélectionnée
+    document.querySelectorAll('.activity-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    document.querySelector(`[data-event-id="${id}"]`).classList.add('selected');
+
+    // Mettre à jour les filtres du sidepanel
+    document.getElementById('sidepanel-sport').value = sport;
+    document.getElementById('sidepanel-lieu').value = lieu;
+
+    // Mettre à jour la carte
+    updateSidepanelMap(lat, lng, lieu, sport);
+
+    // Mettre à jour les détails
+    updateSidepanelDetails(sport, lieu, dateHeure, organizer, accessibilite, participants, id, transportStation, transportLines);
+}
+
+// Fonction pour mettre à jour la carte du sidepanel
+function updateSidepanelMap(lat, lng, lieu, sport) {
+    const mapContainer = document.getElementById('sidepanel-map');
+
+    if (lat && lng) {
+        // Supprimer le placeholder
+        mapContainer.innerHTML = '<div id="leaflet-map" style="height: 200px; width: 100%; border-radius: 8px;"></div>';
+
+        // Initialiser ou mettre à jour la carte
+        if (sidepanelMap) {
+            sidepanelMap.remove();
+        }
+
+        sidepanelMap = L.map('leaflet-map').setView([lat, lng], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(sidepanelMap);
+
+        // Ajouter un marqueur
+        mapMarker = L.marker([lat, lng]).addTo(sidepanelMap)
+            .bindPopup(`<b>${sport}</b><br>${lieu}`)
+            .openPopup();
+    } else {
+        mapContainer.innerHTML = '<div class="map-placeholder"><p>📍 Pas de géolocalisation disponible pour cette activité</p></div>';
+    }
+}
+
+// Fonction pour mettre à jour les détails du sidepanel
+function updateSidepanelDetails(sport, lieu, dateHeure, organizer, accessibilite, participants, eventId, transportStation, transportLines) {
+    const detailsContainer = document.getElementById('sidepanel-details');
+
+    let accessBadge = '';
+    if (accessibilite && accessibilite !== '') {
+        accessBadge = '<span class="detail-badge-pmr">♿ Accessible PMR</span>';
+    }
+
+    // Générer les badges de transport
+    let transportHTML = '';
+    if (transportStation && transportStation !== '') {
+        transportHTML += `<div class="detail-transport">
+            <p class="transport-station-label">🚇 <strong>${transportStation}</strong></p>`;
+
+        if (transportLines && transportLines !== '') {
+            transportHTML += '<div class="transport-lines">';
+            const lines = transportLines.split(',').map(l => l.trim());
+            lines.forEach(line => {
+                const lineClass = getLineClass(line);
+                transportHTML += `<span class="line-badge ${lineClass}">${line}</span>`;
+            });
+            transportHTML += '</div>';
+        }
+        transportHTML += '</div>';
+    }
+
+    detailsContainer.innerHTML = `
+        <div class="detail-card">
+            <h6 class="detail-title">${sport}</h6>
+            <p class="detail-lieu">📍 ${lieu}</p>
+            <p class="detail-date">🕒 ${dateHeure}</p>
+            <p class="detail-organizer">👤 Organisé par ${organizer}</p>
+            <p class="detail-participants">👥 ${participants} participant(s)</p>
+            <div class="detail-badges">
+                ${accessBadge}
+            </div>
+            ${transportHTML}
+        </div>
+    `;
+}
+
+// Fonction pour obtenir la classe CSS selon la ligne de transport
+function getLineClass(line) {
+    line = line.toUpperCase().trim();
+
+    // Lignes de métro
+    if (line.startsWith('M') || /^[0-9]+$/.test(line)) {
+        const num = line.replace('M', '');
+        return `line-metro line-m${num}`;
+    }
+    // RER
+    if (line.startsWith('RER')) {
+        const letter = line.replace('RER', '').replace(' ', '');
+        return `line-rer line-rer-${letter.toLowerCase()}`;
+    }
+    // Tramway
+    if (line.startsWith('T')) {
+        return 'line-tram';
+    }
+    // Bus
+    if (line.startsWith('BUS') || /^[0-9]{2,3}$/.test(line)) {
+        return 'line-bus';
+    }
+    return 'line-default';
+}
+
+// ===========================
+// CHAT FUNCTIONALITY
+// ===========================
+
+let currentChatEventId = null;
+let chatPollingInterval = null;
+let lastMessageId = 0;
+let unreadMessages = {};  // Stocke les messages non lus par event_id
+let lastCheckedMessages = {};  // Dernier message vérifié par event
+let notificationPollingInterval = null;
+
+// Liste des événements auxquels l'utilisateur participe
+const joinedEventIds = [
+    {% for item in events %}
+        {% if item.user_joined or item.is_organizer %}{{ item.event.id }},{% endif %}
+    {% endfor %}
+];
+
+// Ouvrir le chat
+function openChat() {
+    if (!selectedActivity) return;
+    openChatForEvent(selectedActivity.id, selectedActivity.sport);
+}
+
+// Ouvrir le chat pour un événement spécifique
+function openChatForEvent(eventId, sportName) {
+    currentChatEventId = eventId;
+    lastMessageId = 0;
+
+    document.getElementById('sidepanel-map-view').style.display = 'none';
+    document.getElementById('sidepanel-chat-view').style.display = 'block';
+    document.getElementById('chat-event-name').textContent = '- ' + sportName;
+
+    // Réinitialiser les notifications pour cet événement
+    resetNotifications(eventId);
+
+    // Charger les messages
+    loadMessages();
+
+    // Démarrer le polling
+    if (chatPollingInterval) clearInterval(chatPollingInterval);
+    chatPollingInterval = setInterval(pollMessages, 3000);
+}
+
+// Fermer le chat
+function closeChat() {
+    document.getElementById('sidepanel-map-view').style.display = 'block';
+    document.getElementById('sidepanel-chat-view').style.display = 'none';
+
+    // Arrêter le polling
+    if (chatPollingInterval) {
+        clearInterval(chatPollingInterval);
+        chatPollingInterval = null;
+    }
+
+    currentChatEventId = null;
+}
+
+// Charger les messages
+function loadMessages() {
+    if (!currentChatEventId) return;
+
+    fetch(`/api/event/${currentChatEventId}/messages`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.messages) {
+                renderMessages(data.messages, false);
+                if (data.messages.length > 0) {
+                    lastMessageId = data.messages[data.messages.length - 1].id;
+                    lastCheckedMessages[currentChatEventId] = lastMessageId;
+                }
+            }
+        })
+        .catch(err => console.error('Erreur chargement messages:', err));
+}
+
+// Polling pour nouveaux messages
+function pollMessages() {
+    if (!currentChatEventId) return;
+
+    fetch(`/api/event/${currentChatEventId}/messages?since=${lastMessageId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.messages && data.messages.length > 0) {
+                renderMessages(data.messages, true);
+                lastMessageId = data.messages[data.messages.length - 1].id;
+                lastCheckedMessages[currentChatEventId] = lastMessageId;
+
+                // Notification pour messages des autres
+                const newFromOthers = data.messages.filter(m => !m.is_mine);
+                if (newFromOthers.length > 0) {
+                    playNotificationSound();
+                }
+            }
+        })
+        .catch(err => console.error('Erreur polling:', err));
+}
+
+// Afficher les messages
+function renderMessages(messages, append) {
+    const container = document.getElementById('chat-messages');
+
+    if (!append) {
+        container.innerHTML = '';
+    }
+
+    if (messages.length === 0 && !append) {
+        container.innerHTML = '<div class="chat-empty"><p>Aucun message pour le moment.<br>Soyez le premier à écrire !</p></div>';
+        return;
+    }
+
+    // Supprimer le message vide si présent
+    const emptyMsg = container.querySelector('.chat-empty');
+    if (emptyMsg) emptyMsg.remove();
+
+    messages.forEach(msg => {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `chat-message ${msg.is_mine ? 'chat-message-mine' : 'chat-message-other'}`;
+
+        const initials = msg.username.substring(0, 2).toUpperCase();
+
+        msgDiv.innerHTML = `
+            ${!msg.is_mine ? `<div class="chat-avatar" style="background-color: ${msg.avatar_color}">${initials}</div>` : ''}
+            <div class="chat-bubble">
+                ${!msg.is_mine ? `<div class="chat-username">${msg.username}</div>` : ''}
+                <div class="chat-content">${escapeHtml(msg.content)}</div>
+            </div>
+            ${msg.is_mine ? `<div class="chat-avatar" style="background-color: ${msg.avatar_color}">${initials}</div>` : ''}
+        `;
+
+        container.appendChild(msgDiv);
+    });
+
+    // Scroll en bas
+    container.scrollTop = container.scrollHeight;
+}
+
+// Envoyer un message
+function sendMessage(e) {
+    e.preventDefault();
+
+    const input = document.getElementById('chat-input');
+    const content = input.value.trim();
+
+    if (!content || !currentChatEventId) return;
+
+    fetch(`/api/event/${currentChatEventId}/messages`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ content: content })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            renderMessages([data.message], true);
+            lastMessageId = data.message.id;
+            input.value = '';
+        }
+    })
+    .catch(err => console.error('Erreur envoi:', err));
+}
+
+// Jouer le son de notification avec Web Audio API
+function playNotificationSound() {
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+        gainNode.gain.value = 0.3;
+
+        oscillator.start();
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        oscillator.stop(audioContext.currentTime + 0.3);
+    } catch (e) {
+        console.log('Audio notification not supported');
+    }
+
+    // Flash visuel sur l'en-tête du chat
+    const chatHeader = document.querySelector('#sidepanel-chat-view .sidepanel-header');
+    if (chatHeader) {
+        chatHeader.classList.add('chat-notification-flash');
+        setTimeout(() => chatHeader.classList.remove('chat-notification-flash'), 500);
+    }
+}
+
+
+// Échapper le HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Mettre à jour le badge de notification sur une carte
+function updateNotificationBadge(eventId, count) {
+    const badge = document.getElementById('notif-' + eventId);
+    if (badge) {
+        if (count > 0) {
+            badge.querySelector('.notif-count').textContent = count > 99 ? '99+' : count;
+            badge.classList.add('visible');
+        } else {
+            badge.classList.remove('visible');
+        }
+    }
+}
+
+// Vérifier les nouveaux messages pour tous les événements rejoints
+function checkAllNotifications() {
+    joinedEventIds.forEach(eventId => {
+        // Ne pas vérifier si le chat est ouvert pour cet événement
+        if (currentChatEventId === eventId) return;
+
+        // Attendre que l'initialisation soit terminée pour cet événement
+        if (!(eventId in lastCheckedMessages)) return;
+
+        const sinceId = lastCheckedMessages[eventId] || 0;
+
+        fetch(`/api/event/${eventId}/messages?since=${sinceId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.messages && data.messages.length > 0) {
+                    // Mettre à jour le dernier message vérifié
+                    lastCheckedMessages[eventId] = data.messages[data.messages.length - 1].id;
+
+                    // Compter les nouveaux messages des autres
+                    const newFromOthers = data.messages.filter(m => !m.is_mine);
+                    if (newFromOthers.length > 0) {
+                        // Incrémenter les messages non lus
+                        unreadMessages[eventId] = (unreadMessages[eventId] || 0) + newFromOthers.length;
+                        updateNotificationBadge(eventId, unreadMessages[eventId]);
+
+                        // Notification sonore
+                        playNotificationSound();
+                    }
+                }
+            })
+            .catch(err => console.error('Erreur notification:', err));
+    });
+}
+
+// Réinitialiser les notifications quand on ouvre le chat
+function resetNotifications(eventId) {
+    unreadMessages[eventId] = 0;
+    updateNotificationBadge(eventId, 0);
+}
+
+// Initialiser la carte et les notifications
+document.addEventListener('DOMContentLoaded', function() {
+    // Sélectionner automatiquement la première activité géolocalisée
+    const firstGeoCard = document.querySelector('.activity-card[data-event-id]');
+    if (firstGeoCard) {
+        firstGeoCard.click();
+    }
+
+    // Démarrer le polling des notifications pour les événements rejoints
+    if (joinedEventIds.length > 0) {
+        console.log('Événements rejoints:', joinedEventIds);
+
+        // Initialiser les derniers messages vérifiés avant de démarrer le polling
+        const initPromises = joinedEventIds.map(eventId =>
+            fetch(`/api/event/${eventId}/messages`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.messages && data.messages.length > 0) {
+                        lastCheckedMessages[eventId] = data.messages[data.messages.length - 1].id;
+                    } else {
+                        lastCheckedMessages[eventId] = 0;
+                    }
+                })
+                .catch(err => {
+                    console.error('Erreur fetch messages:', err);
+                    lastCheckedMessages[eventId] = 0;
+                })
+        );
+
+        // Démarrer le polling seulement après l'initialisation
+        Promise.all(initPromises).then(() => {
+            notificationPollingInterval = setInterval(checkAllNotifications, 5000);
+        });
+    }
+});
+
+// Fonction de test pour afficher un badge (à utiliser dans la console)
+function testNotification(eventId) {
+    updateNotificationBadge(eventId, 3);
+}
+</script>
 {% endblock %}

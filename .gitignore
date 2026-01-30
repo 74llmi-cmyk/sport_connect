@@ -8,6 +8,9 @@ ENV/
 *.db
 database.db
 
+# Configuration avec clés API
+config.py
+
 # Fichiers Python compilés
 __pycache__/
 *.py[cod]

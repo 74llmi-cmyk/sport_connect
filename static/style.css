@@ -50,7 +50,745 @@
 .event-card-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
+    padding: 12px 15px;
+}
+
+/* Image de l'événement */
+.event-image {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+}
+
+/* ===========================
+   BANDEAU HORIZONTAL DES ÉVÉNEMENTS
+   =========================== */
+
+.events-horizontal-container {
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.events-horizontal-scroll {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 15px;
+    scroll-behavior: smooth;
+}
+
+/* Scrollbar personnalisée */
+.events-horizontal-scroll::-webkit-scrollbar {
+    height: 8px;
+}
+
+.events-horizontal-scroll::-webkit-scrollbar-track {
+    background: #e9ecef;
+    border-radius: 10px;
+}
+
+.events-horizontal-scroll::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+}
+
+/* Carte d'événement horizontale */
+.event-card-horizontal {
+    min-width: 280px;
+    max-width: 280px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    flex-shrink: 0;
+}
+
+.event-card-horizontal:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.event-card-horizontal.event-joined {
+    border: 2px solid #28a745;
+}
+
+/* En-tête de la carte horizontale */
+.event-card-header-horizontal {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.event-card-header-horizontal .event-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* Image horizontale */
+.event-image-horizontal {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+}
+
+/* Corps de la carte horizontale */
+.event-card-body-horizontal {
     padding: 15px;
+}
+
+.event-card-body-horizontal .event-info {
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+.event-card-body-horizontal .event-info span {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.event-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.event-action {
+    margin-top: 10px;
+}
+
+/* ===========================
+   LAYOUT PRINCIPAL 2 COLONNES
+   =========================== */
+
+.main-layout {
+    display: flex;
+    gap: 25px;
+    align-items: flex-start;
+}
+
+/* Colonne gauche : Activités */
+.activities-column {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Grille des activités */
+.activities-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+/* Carte d'activité */
+.activity-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    overflow: visible;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+    position: relative;
+}
+
+.activity-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.activity-card.selected {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+.activity-card.event-joined {
+    border-color: #28a745;
+}
+
+.activity-card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.activity-sport {
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.activity-card-image {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    display: block;
+}
+
+.activity-card-header {
+    border-radius: 12px 12px 0 0;
+}
+
+.activity-card-content {
+    padding: 12px 15px;
+}
+
+.activity-lieu, .activity-date {
+    font-size: 13px;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+.activity-badges {
+    display: flex;
+    gap: 8px;
+    margin: 8px 0;
+    flex-wrap: wrap;
+}
+
+.badge-pmr {
+    background: #28a745;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+}
+
+.badge-geo {
+    background: #17a2b8;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+}
+
+/* Badges de genre */
+.badge-genre {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.badge-genre-homme {
+    background: #007bff;
+    color: white;
+}
+
+.badge-genre-femme {
+    background: #e83e8c;
+    color: white;
+}
+
+.badge-genre-mixte {
+    background: #6f42c1;
+    color: white;
+}
+
+.activity-action {
+    margin-top: 10px;
+}
+
+/* ===========================
+   SIDEPANEL (PANNEAU DROIT)
+   =========================== */
+
+.sidepanel {
+    width: 320px;
+    min-width: 320px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 20px;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+}
+
+.sidepanel-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px;
+    border-radius: 12px 12px 0 0;
+}
+
+.sidepanel-header h5 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.sidepanel-filters {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.sidepanel-map {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.map-placeholder {
+    background: #f8f9fa;
+    border-radius: 8px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #6c757d;
+}
+
+.sidepanel-details {
+    padding: 15px;
+}
+
+.no-selection {
+    text-align: center;
+    color: #6c757d;
+    padding: 20px;
+}
+
+/* Carte de détails */
+.detail-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.detail-title {
+    color: #667eea;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.detail-lieu, .detail-date, .detail-organizer, .detail-participants {
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: #555;
+}
+
+.detail-badges {
+    margin-top: 10px;
+}
+
+.detail-badge-pmr {
+    background: #28a745;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+/* ===========================
+   RESPONSIVE DESIGN
+   =========================== */
+
+/* Tablettes et petits écrans */
+@media (max-width: 992px) {
+    .main-layout {
+        flex-direction: column;
+    }
+
+    .sidepanel {
+        width: 100%;
+        min-width: 100%;
+        position: relative;
+        top: 0;
+        max-height: none;
+        order: -1;
+        margin-bottom: 20px;
+    }
+
+    .activities-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Filtres en colonne */
+    .filters-section .row {
+        flex-direction: column;
+    }
+
+    .filters-section .col-md-3 {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+
+    /* Admin tables */
+    .admin-table {
+        font-size: 14px;
+    }
+
+    .admin-table .btn-group {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .admin-table .btn {
+        width: 100%;
+        margin: 0 !important;
+    }
+}
+
+/* Mobile */
+@media (max-width: 576px) {
+    /* Container principal */
+    .container {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    /* Grille des activités */
+    .activities-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    /* Cartes d'activités */
+    .activity-card {
+        margin: 0;
+    }
+
+    .activity-card-header {
+        padding: 8px 12px;
+    }
+
+    .activity-sport {
+        font-size: 14px;
+    }
+
+    .activity-card-image {
+        height: 100px;
+    }
+
+    .activity-card-content {
+        padding: 10px 12px;
+    }
+
+    /* Sidepanel */
+    .sidepanel {
+        border-radius: 8px;
+    }
+
+    .sidepanel-map {
+        height: 180px !important;
+    }
+
+    #leaflet-map {
+        height: 180px !important;
+    }
+
+    /* Chat */
+    .chat-messages {
+        height: 280px;
+    }
+
+    .chat-message {
+        max-width: 90%;
+    }
+
+    .chat-bubble {
+        padding: 6px 10px;
+    }
+
+    .chat-content {
+        font-size: 13px;
+    }
+
+    /* Navbar */
+    .navbar-brand img {
+        height: 30px !important;
+    }
+
+    .navbar .avatar-circle {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 11px !important;
+    }
+
+    /* Barre de progression gamification */
+    .navbar .progress {
+        width: 100px !important;
+    }
+
+    .navbar .text-end small {
+        font-size: 10px;
+    }
+
+    /* Formulaires */
+    .card-body {
+        padding: 15px !important;
+    }
+
+    .form-label {
+        font-size: 14px;
+    }
+
+    .form-control, .form-select {
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+
+    /* Boutons */
+    .btn {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+
+    .btn-lg {
+        padding: 10px 20px;
+        font-size: 16px;
+    }
+
+    /* En-tête des pages */
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    h2, h3 {
+        font-size: 1.3rem;
+    }
+
+    /* Admin header */
+    .admin-header {
+        padding: 15px 0;
+    }
+
+    .admin-header h2 {
+        font-size: 1.2rem;
+    }
+
+    .admin-header .btn {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    /* Tables admin en mode carte sur mobile */
+    .admin-table thead {
+        display: none;
+    }
+
+    .admin-table tbody tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 10px;
+        background: white;
+    }
+
+    .admin-table tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border: none;
+        border-bottom: 1px solid #eee;
+    }
+
+    .admin-table tbody td:last-child {
+        border-bottom: none;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .admin-table tbody td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #495057;
+        font-size: 12px;
+        text-transform: uppercase;
+    }
+
+    /* Transport checkboxes */
+    .transport-checkboxes {
+        gap: 6px;
+    }
+
+    .transport-check .line-label {
+        min-width: 35px;
+        height: 28px;
+        font-size: 11px;
+        padding: 0 8px;
+    }
+
+    /* Profile */
+    .profile-header {
+        padding: 20px;
+        text-align: center;
+    }
+
+    .profile-avatar-large {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+    }
+
+    .stat-card {
+        padding: 15px;
+    }
+
+    .stat-number {
+        font-size: 24px;
+    }
+
+    /* Badges */
+    .badge {
+        font-size: 10px;
+        padding: 3px 6px;
+    }
+
+    /* Notification icon */
+    .chat-notification-icon {
+        width: 22px;
+        height: 22px;
+        min-width: 22px;
+        font-size: 10px;
+        top: -8px;
+        right: -8px;
+    }
+}
+
+/* Très petits écrans */
+@media (max-width: 375px) {
+    .navbar-brand span {
+        display: none;
+    }
+
+    .activity-card-image {
+        height: 80px;
+    }
+
+    .filters-section {
+        padding: 10px;
+    }
+
+    .chat-messages {
+        height: 220px;
+    }
+
+    .btn-group-sm .btn {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+}
+
+/* ===========================
+   BADGES DE TRANSPORT
+   =========================== */
+
+/* Badge transport sur les cartes */
+.activity-transport {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #eee;
+}
+
+.transport-badge {
+    background: #003366;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    display: inline-block;
+}
+
+/* Section transport dans le sidepanel */
+.detail-transport {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #ddd;
+}
+
+.transport-station-label {
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.transport-lines {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Badge de ligne générique */
+.line-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 8px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    background: #6c757d;
+}
+
+/* Lignes de métro - Couleurs officielles RATP */
+.line-metro {
+    border-radius: 50%;
+}
+
+.line-m1 { background: #FFCD00; color: #000; }
+.line-m2 { background: #0055C8; }
+.line-m3 { background: #6E6E00; }
+.line-m3bis, .line-m3b { background: #82C8E6; color: #000; }
+.line-m4 { background: #A0006E; }
+.line-m5 { background: #FF7E2E; }
+.line-m6 { background: #6ECA97; color: #000; }
+.line-m7 { background: #FA9ABA; color: #000; }
+.line-m7bis, .line-m7b { background: #6ECA97; color: #000; }
+.line-m8 { background: #E19BDF; color: #000; }
+.line-m9 { background: #B6BD00; color: #000; }
+.line-m10 { background: #C9910D; }
+.line-m11 { background: #704B1C; }
+.line-m12 { background: #007852; }
+.line-m13 { background: #6EC4E8; color: #000; }
+.line-m14 { background: #62259D; }
+
+/* RER - Couleurs officielles */
+.line-rer {
+    border-radius: 4px;
+    min-width: 45px;
+}
+
+.line-rer-a { background: #E3051C; }
+.line-rer-b { background: #5291CE; }
+.line-rer-c { background: #FFCD00; color: #000; }
+.line-rer-d { background: #00814F; }
+.line-rer-e { background: #BD76A1; }
+
+/* Tramway */
+.line-tram {
+    background: #000000;
+    border-radius: 4px;
+}
+
+/* Bus */
+.line-bus {
+    background: #91BE1E;
+    color: #000;
+    border-radius: 4px;
+}
+
+/* Défaut */
+.line-default {
+    background: #6c757d;
+    border-radius: 4px;
 }
 
 /* Badges */
@@ -290,4 +1028,746 @@
 /* Footer */
 footer {
     margin-top: 80px;
+}
+
+/* ===========================
+   INTERFACE ADMINISTRATION
+   =========================== */
+
+/* En-tête admin */
+.admin-header {
+    padding: 20px 0;
+    border-bottom: 1px solid #dee2e6;
+    margin-bottom: 20px;
+}
+
+.admin-header h2 {
+    color: #343a40;
+    font-weight: 600;
+}
+
+/* Table admin */
+.admin-table {
+    margin-bottom: 0;
+}
+
+.admin-table thead th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    padding: 15px 12px;
+}
+
+.admin-table tbody td {
+    vertical-align: middle;
+    padding: 12px;
+}
+
+.admin-table .btn-group {
+    flex-wrap: nowrap;
+}
+
+.admin-table .btn-group .btn {
+    white-space: nowrap;
+}
+
+/* Carte Leaflet dans le formulaire admin */
+.admin-map {
+    height: 350px;
+    border-radius: 8px;
+    border: 2px solid #dee2e6;
+    z-index: 1;
+}
+
+/* Badge admin dans la navbar */
+.nav-link.text-warning {
+    font-weight: 600;
+    background-color: rgba(255, 193, 7, 0.1);
+    border-radius: 4px;
+    padding: 8px 12px !important;
+}
+
+.nav-link.text-warning:hover {
+    background-color: rgba(255, 193, 7, 0.2);
+}
+
+/* Formulaire admin */
+.admin-form .form-label {
+    font-weight: 500;
+    color: #495057;
+}
+
+.admin-form .form-control:focus,
+.admin-form .form-select:focus {
+    border-color: #343a40;
+    box-shadow: 0 0 0 0.2rem rgba(52, 58, 64, 0.25);
+}
+
+/* Cartes admin */
+.admin-card {
+    border: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.admin-card .card-header {
+    background: #343a40;
+    color: white;
+    font-weight: 600;
+}
+
+/* Alertes admin */
+.admin-alert {
+    border-left: 4px solid;
+    border-radius: 4px;
+}
+
+.admin-alert.alert-info {
+    border-left-color: #17a2b8;
+}
+
+.admin-alert.alert-warning {
+    border-left-color: #ffc107;
+}
+
+/* Responsive admin */
+@media (max-width: 992px) {
+    .admin-table .btn-group {
+        flex-direction: column;
+    }
+
+    .admin-table .btn-group .btn {
+        border-radius: 4px !important;
+        margin-bottom: 2px;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-map {
+        height: 250px;
+    }
+}
+
+/* ===========================
+   CHECKBOXES TRANSPORT ADMIN
+   =========================== */
+
+.transport-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.transport-check {
+    margin: 0 !important;
+}
+
+.transport-check .form-check-input {
+    display: none;
+}
+
+.transport-check .line-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    border: 2px solid #dee2e6;
+    background: #f8f9fa;
+    color: #495057;
+    transition: all 0.2s;
+}
+
+.transport-check .form-check-input:checked + .line-label {
+    border-color: transparent;
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* Couleurs Métro RATP */
+.transport-check .form-check-input:checked + .line-label-m1 { background: #FFCD00; color: #000; }
+.transport-check .form-check-input:checked + .line-label-m2 { background: #0055C8; }
+.transport-check .form-check-input:checked + .line-label-m3 { background: #6E6E00; }
+.transport-check .form-check-input:checked + .line-label-m3bis { background: #82C8E6; color: #000; }
+.transport-check .form-check-input:checked + .line-label-m4 { background: #A0006E; }
+.transport-check .form-check-input:checked + .line-label-m5 { background: #FF7E2E; }
+.transport-check .form-check-input:checked + .line-label-m6 { background: #6ECA97; color: #000; }
+.transport-check .form-check-input:checked + .line-label-m7 { background: #FA9ABA; color: #000; }
+.transport-check .form-check-input:checked + .line-label-m7bis { background: #6ECA97; color: #000; }
+.transport-check .form-check-input:checked + .line-label-m8 { background: #E19BDF; color: #000; }
+.transport-check .form-check-input:checked + .line-label-m9 { background: #B6BD00; color: #000; }
+.transport-check .form-check-input:checked + .line-label-m10 { background: #C9910D; }
+.transport-check .form-check-input:checked + .line-label-m11 { background: #704B1C; }
+.transport-check .form-check-input:checked + .line-label-m12 { background: #007852; }
+.transport-check .form-check-input:checked + .line-label-m13 { background: #6EC4E8; color: #000; }
+.transport-check .form-check-input:checked + .line-label-m14 { background: #62259D; }
+
+/* Couleurs RER */
+.transport-check .form-check-input:checked + .line-label-rer-a { background: #E3051C; }
+.transport-check .form-check-input:checked + .line-label-rer-b { background: #5291CE; }
+.transport-check .form-check-input:checked + .line-label-rer-c { background: #FFCD00; color: #000; }
+.transport-check .form-check-input:checked + .line-label-rer-d { background: #00814F; }
+.transport-check .form-check-input:checked + .line-label-rer-e { background: #BD76A1; }
+
+/* Couleurs Tramway */
+.transport-check .form-check-input:checked + .line-label-tram { background: #000000; }
+
+/* ===========================
+   CHAT INTERFACE
+   =========================== */
+
+/* Container messages */
+.chat-messages {
+    height: 350px;
+    overflow-y: auto;
+    padding: 15px;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.chat-empty {
+    text-align: center;
+    color: #6c757d;
+    padding: 40px 20px;
+}
+
+/* Message individuel */
+.chat-message {
+    display: flex;
+    gap: 10px;
+    max-width: 85%;
+}
+
+.chat-message-other {
+    align-self: flex-start;
+}
+
+.chat-message-mine {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+/* Avatar dans le chat */
+.chat-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: bold;
+    color: white;
+    flex-shrink: 0;
+}
+
+/* Bulle de message */
+.chat-bubble {
+    background: white;
+    padding: 8px 12px;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.chat-message-mine .chat-bubble {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.chat-username {
+    font-size: 11px;
+    font-weight: 600;
+    color: #667eea;
+    margin-bottom: 2px;
+}
+
+.chat-content {
+    font-size: 14px;
+    word-wrap: break-word;
+}
+
+/* Zone de saisie */
+.chat-input-container {
+    padding: 15px;
+    background: white;
+    border-top: 1px solid #dee2e6;
+}
+
+.chat-input-container .input-group {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 25px;
+    overflow: hidden;
+}
+
+.chat-input-container .form-control {
+    border: none;
+    padding-left: 20px;
+}
+
+.chat-input-container .form-control:focus {
+    box-shadow: none;
+}
+
+.chat-input-container .btn {
+    border-radius: 0 25px 25px 0;
+    padding: 10px 20px;
+}
+
+/* Animation notification */
+@keyframes chatFlash {
+    0%, 100% { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    50% { background: #28a745; }
+}
+
+.chat-notification-flash {
+    animation: chatFlash 0.5s ease-in-out;
+}
+
+/* Badge notification */
+#chat-notification-badge {
+    font-size: 10px;
+    padding: 3px 6px;
+    border-radius: 10px;
+}
+
+/* Responsive chat */
+@media (max-width: 992px) {
+    .chat-messages {
+        height: 250px;
+    }
+}
+
+/* ===========================
+   NOTIFICATION ICON
+   =========================== */
+
+.chat-notification-icon {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #dc3545;
+    color: white;
+    border-radius: 50%;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 6px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.6);
+    animation: notifPulse 1.5s infinite;
+    z-index: 20;
+    border: 2px solid white;
+}
+
+.chat-notification-icon.visible {
+    display: flex;
+}
+
+.notif-count {
+    line-height: 1;
+}
+
+@keyframes notifPulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 2px 6px rgba(220, 53, 69, 0.5);
+    }
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 2px 12px rgba(220, 53, 69, 0.8);
+    }
+}
+
+/* ===========================
+   CHATBOT COACH SPORTIF
+   =========================== */
+
+/* Bouton du chatbot dans la navbar */
+.chatbot-toggle-btn {
+    position: relative;
+    background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s;
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+    margin-left: 10px;
+}
+
+.chatbot-toggle-btn:hover {
+    background: linear-gradient(135deg, #FF8E53 0%, #FF6B6B 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+}
+
+.chatbot-toggle-btn i {
+    margin-right: 6px;
+}
+
+/* Fenêtre du chatbot */
+.chatbot-window {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 380px;
+    max-width: calc(100vw - 40px);
+    height: 550px;
+    max-height: calc(100vh - 100px);
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    display: none;
+    flex-direction: column;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+.chatbot-window.open {
+    display: flex;
+    animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* En-tête du chatbot */
+.chatbot-header {
+    background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.chatbot-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chatbot-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chatbot-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+/* Zone de messages du chatbot */
+.chatbot-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Scrollbar personnalisée pour le chatbot */
+.chatbot-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chatbot-messages::-webkit-scrollbar-track {
+    background: #e9ecef;
+}
+
+.chatbot-messages::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+    border-radius: 3px;
+}
+
+/* Message du chatbot */
+.chatbot-message {
+    display: flex;
+    gap: 10px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chatbot-message.user {
+    flex-direction: row-reverse;
+}
+
+.chatbot-message.assistant {
+    flex-direction: row;
+}
+
+/* Avatar du chatbot */
+.chatbot-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.chatbot-message.assistant .chatbot-avatar {
+    background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+}
+
+.chatbot-message.user .chatbot-avatar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Bulle de message du chatbot */
+.chatbot-bubble {
+    max-width: 75%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    word-wrap: break-word;
+    line-height: 1.5;
+    font-size: 14px;
+}
+
+.chatbot-message.assistant .chatbot-bubble {
+    background: white;
+    color: #333;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.chatbot-message.user .chatbot-bubble {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+/* Message de bienvenue */
+.chatbot-welcome {
+    text-align: center;
+    padding: 20px;
+    color: #6c757d;
+}
+
+.chatbot-welcome-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.chatbot-welcome h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #FF6B6B;
+    margin-bottom: 8px;
+}
+
+.chatbot-welcome p {
+    font-size: 13px;
+    margin-bottom: 0;
+}
+
+/* Indicateur de frappe */
+.chatbot-typing {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: white;
+    border-radius: 16px;
+    border-bottom-left-radius: 4px;
+    max-width: fit-content;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.chatbot-typing.visible {
+    display: flex;
+}
+
+.chatbot-typing-dots {
+    display: flex;
+    gap: 4px;
+}
+
+.chatbot-typing-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #FF6B6B;
+    animation: typingDot 1.4s infinite;
+}
+
+.chatbot-typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.chatbot-typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typingDot {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.7;
+    }
+    30% {
+        transform: translateY(-8px);
+        opacity: 1;
+    }
+}
+
+/* Zone de saisie du chatbot */
+.chatbot-input-container {
+    padding: 16px 20px;
+    background: white;
+    border-top: 1px solid #e9ecef;
+    flex-shrink: 0;
+}
+
+.chatbot-input-wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.chatbot-input {
+    flex: 1;
+    border: 2px solid #e9ecef;
+    border-radius: 20px;
+    padding: 10px 16px;
+    font-size: 14px;
+    resize: none;
+    max-height: 100px;
+    transition: border-color 0.2s;
+}
+
+.chatbot-input:focus {
+    outline: none;
+    border-color: #FF6B6B;
+}
+
+.chatbot-input::placeholder {
+    color: #adb5bd;
+}
+
+.chatbot-send-btn {
+    background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.chatbot-send-btn:hover:not(:disabled) {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+}
+
+.chatbot-send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Responsive chatbot */
+@media (max-width: 576px) {
+    .chatbot-window {
+        bottom: 0;
+        right: 0;
+        left: 0;
+        width: 100%;
+        max-width: 100%;
+        height: 100%;
+        max-height: 100%;
+        border-radius: 0;
+    }
+
+    .chatbot-toggle-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 30px;
+        box-shadow: 0 4px 16px rgba(255, 107, 107, 0.4);
+        z-index: 9998;
+    }
+
+    .chatbot-toggle-btn span {
+        display: none;
+    }
+
+    .chatbot-toggle-btn i {
+        margin-right: 0;
+        font-size: 20px;
+    }
+
+    .chatbot-bubble {
+        max-width: 85%;
+    }
+}
+
+/* Animation du bouton chatbot */
+@keyframes chatbotBounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+.chatbot-toggle-btn.animate {
+    animation: chatbotBounce 0.6s ease-in-out;
 }
