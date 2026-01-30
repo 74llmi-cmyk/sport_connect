@@ -4,14 +4,18 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import sqlite3
 import random
+import requests
 
 # Import du modèle User et des fonctions places
 from models import (User, get_user_by_id, get_user_by_username, create_user, update_user_points,
                     get_all_places, get_place_by_id, create_place, update_place, delete_place,
                     toggle_place_active)
 
+# Import de la configuration
+import config
+
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'votre-cle-secrete-a-changer-en-production-sft2026'
+app.config['SECRET_KEY'] = config.SECRET_KEY
 
 # Configuration Flask-Login
 login_manager = LoginManager()
@@ -802,6 +806,116 @@ def send_event_message(event_id):
             'is_mine': True
         }
     })
+
+
+# ===========================
+# API CHATBOT COACH SPORTIF
+# ===========================
+
+@app.route('/api/chatbot', methods=['POST'])
+@login_required
+def chatbot():
+    """
+    API pour le chatbot coach sportif utilisant l'API Albert
+    """
+    print("=" * 50)
+    print("[CHATBOT] Route appelée")
+    print("=" * 50)
+
+    try:
+        data = request.json
+        print(f"[CHATBOT] Data reçue: {data}")
+
+        user_message = data.get('message', '').strip()
+        conversation_history = data.get('history', [])
+
+        print(f"[CHATBOT] Message utilisateur: {user_message}")
+        print(f"[CHATBOT] Historique: {len(conversation_history)} messages")
+
+        if not user_message:
+            return jsonify({'error': 'Message vide'}), 400
+
+        # Construire l'historique pour l'API Albert
+        messages = [
+            {
+                "role": "system",
+                "content": config.CHATBOT_SYSTEM_PROMPT
+            }
+        ]
+
+        # Ajouter l'historique de conversation
+        for msg in conversation_history[-10:]:  # Garder les 10 derniers messages
+            messages.append({
+                "role": msg.get('role', 'user'),
+                "content": msg.get('content', '')
+            })
+
+        # Ajouter le message actuel
+        messages.append({
+            "role": "user",
+            "content": user_message
+        })
+
+        # Appeler l'API Albert
+        headers = {
+            'Authorization': f'Bearer {config.ALBERT_API_KEY}',
+            'Content-Type': 'application/json'
+        }
+
+        payload = {
+            "model": "openai/gpt-oss-120b",
+            "messages": messages,
+            "temperature": 0.7,
+            "max_tokens": 1000,
+            "stream": False
+        }
+
+        response = requests.post(
+            f"{config.ALBERT_API_URL}/chat/completions",
+            headers=headers,
+            json=payload,
+            timeout=30
+        )
+
+        print(f"[CHATBOT] Status Code: {response.status_code}")
+        print(f"[CHATBOT] Response: {response.text[:500]}")
+
+        if response.status_code == 200:
+            result = response.json()
+            assistant_message = result.get('choices', [{}])[0].get('message', {}).get('content', '')
+
+            if not assistant_message:
+                assistant_message = "Désolé, je n'ai pas pu générer une réponse. Peux-tu reformuler ta question ?"
+
+            return jsonify({
+                'success': True,
+                'message': assistant_message
+            })
+        else:
+            # En cas d'erreur de l'API, afficher les détails
+            print(f"[CHATBOT ERROR] Status: {response.status_code}")
+            print(f"[CHATBOT ERROR] Body: {response.text}")
+            return jsonify({
+                'success': False,
+                'message': "Je suis désolé, je rencontre un petit problème technique. Réessaie dans quelques instants !"
+            }), 500
+
+    except requests.exceptions.Timeout:
+        print("[CHATBOT ERROR] Timeout")
+        return jsonify({
+            'success': False,
+            'message': "La réponse prend trop de temps. Peux-tu réessayer ?"
+        }), 504
+
+    except Exception as e:
+        print(f"[CHATBOT ERROR] Exception: {str(e)}")
+        print(f"[CHATBOT ERROR] Type: {type(e).__name__}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'message': "Une erreur est survenue. N'hésite pas à réessayer !"
+        }), 500
 
 
 # ===========================

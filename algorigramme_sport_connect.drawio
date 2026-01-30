@@ -1,0 +1,790 @@
+<mxfile host="app.diagrams.net" modified="2026-01-30T00:00:00.000Z" agent="5.0" version="24.0.0" etag="algo" type="device" pages="5">
+
+  <!-- PAGE 1: FLUX AUTHENTIFICATION -->
+  <diagram name="1. Authentification" id="auth-flow">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Début -->
+        <mxCell id="auth-start" value="Début" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="340" y="40" width="120" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Utilisateur connecté ? -->
+        <mxCell id="auth-check" value="Utilisateur&lt;br&gt;connecté ?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="320" y="140" width="160" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="auth-start" target="auth-check">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- OUI -> Dashboard -->
+        <mxCell id="auth-dashboard" value="Redirection&lt;br&gt;Dashboard (/)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="560" y="160" width="140" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow2" value="OUI" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fontColor=#28a745;" edge="1" parent="1" source="auth-check" target="auth-dashboard">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- NON -> Page Login -->
+        <mxCell id="auth-login-page" value="Affichage&lt;br&gt;Page Login" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="330" y="280" width="140" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow3" value="NON" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fontColor=#dc3545;" edge="1" parent="1" source="auth-check" target="auth-login-page">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Choix Login ou Register -->
+        <mxCell id="auth-choice" value="Nouveau&lt;br&gt;compte ?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="320" y="380" width="160" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="auth-login-page" target="auth-choice">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- NON -> Login -->
+        <mxCell id="auth-login-form" value="Saisie&lt;br&gt;Username&lt;br&gt;Password" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="100" y="400" width="140" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow5" value="NON" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fontColor=#dc3545;" edge="1" parent="1" source="auth-choice" target="auth-login-form">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- OUI -> Register -->
+        <mxCell id="auth-register-form" value="Saisie&lt;br&gt;Username, Email&lt;br&gt;Password" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="560" y="400" width="140" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow6" value="OUI" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fontColor=#28a745;" edge="1" parent="1" source="auth-choice" target="auth-register-form">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Validation Login -->
+        <mxCell id="auth-validate-login" value="Validation&lt;br&gt;Credentials&lt;br&gt;(check_password_hash)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="100" y="520" width="140" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="auth-login-form" target="auth-validate-login">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Validation Register -->
+        <mxCell id="auth-validate-register" value="Validation&lt;br&gt;• Username unique&lt;br&gt;• Password ≥ 6 chars" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="560" y="520" width="140" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="auth-register-form" target="auth-validate-register">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Vérification credentials -->
+        <mxCell id="auth-valid-check" value="Credentials&lt;br&gt;valides ?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="90" y="640" width="160" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="auth-validate-login" target="auth-valid-check">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Vérification register -->
+        <mxCell id="auth-register-check" value="Données&lt;br&gt;valides ?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="550" y="640" width="160" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="auth-validate-register" target="auth-register-check">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Erreur Login -->
+        <mxCell id="auth-error-login" value="Flash Error&lt;br&gt;'Identifiants incorrects'" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcccc;strokeColor=#cc0000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="100" y="800" width="140" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow11" value="NON" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fontColor=#dc3545;" edge="1" parent="1" source="auth-valid-check" target="auth-error-login">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Retour Login page -->
+        <mxCell id="flow12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1;" edge="1" parent="1" source="auth-error-login" target="auth-login-page">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="50" y="830" />
+              <mxPoint x="50" y="310" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Erreur Register -->
+        <mxCell id="auth-error-register" value="Flash Error&lt;br&gt;'Username existant'" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcccc;strokeColor=#cc0000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="560" y="800" width="140" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow13" value="NON" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fontColor=#dc3545;" edge="1" parent="1" source="auth-register-check" target="auth-error-register">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Retour Register -->
+        <mxCell id="flow14" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1;" edge="1" parent="1" source="auth-error-register" target="auth-login-page">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="760" y="830" />
+              <mxPoint x="760" y="310" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Créer user -->
+        <mxCell id="auth-create-user" value="Créer User&lt;br&gt;• Hash password&lt;br&gt;• Avatar color&lt;br&gt;• Points = 0" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="340" y="800" width="140" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow15" value="OUI" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fontColor=#28a745;" edge="1" parent="1" source="auth-register-check" target="auth-create-user">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Session login (pour les 2 chemins) -->
+        <mxCell id="auth-session" value="Créer Session&lt;br&gt;login_user()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="340" y="920" width="140" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow16" value="OUI" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fontColor=#28a745;" edge="1" parent="1" source="auth-valid-check" target="auth-session">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="290" y="690" />
+              <mxPoint x="290" y="950" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="flow17" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="auth-create-user" target="auth-session">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Redirection Dashboard -->
+        <mxCell id="auth-redirect" value="Redirection&lt;br&gt;Dashboard (/)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="340" y="1030" width="140" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow18" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="auth-session" target="auth-redirect">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Fin -->
+        <mxCell id="auth-end" value="Fin" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="350" y="1130" width="120" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow19" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="auth-redirect" target="auth-end">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow20" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="auth-dashboard" target="auth-end">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="630" y="1160" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- PAGE 2: FLUX CRÉATION ÉVÉNEMENT -->
+  <diagram name="2. Création Événement" id="event-create-flow">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Début -->
+        <mxCell id="event-start" value="Début&lt;br&gt;(Clic 'Proposer')" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="340" y="40" width="140" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Vérification authentification -->
+        <mxCell id="event-auth" value="@login_required&lt;br&gt;Utilisateur&lt;br&gt;authentifié ?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="320" y="150" width="180" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-flow1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="event-start" target="event-auth">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Redirection login -->
+        <mxCell id="event-redir-login" value="Redirection&lt;br&gt;/login" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcccc;strokeColor=#cc0000;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="580" y="170" width="140" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-flow2" value="NON" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fontColor=#dc3545;" edge="1" parent="1" source="event-auth" target="event-redir-login">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Affichage formulaire -->
+        <mxCell id="event-form" value="Affichage&lt;br&gt;Formulaire /add&lt;br&gt;• Liste lieux actifs&lt;br&gt;• Sports disponibles" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="330" y="300" width="160" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-flow3" value="OUI" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fontColor=#28a745;" edge="1" parent="1" source="event-auth" target="event-form">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Saisie utilisateur -->
+        <mxCell id="event-input" value="Saisie Utilisateur&lt;br&gt;• Sport&lt;br&gt;• Niveau&lt;br&gt;• Date/Heure&lt;br&gt;• Lieu (ou custom)&lt;br&gt;• Géolocalisation&lt;br&gt;• Transport&lt;br&gt;• PMR&lt;br&gt;• Genre" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="310" y="430" width="200" height="140" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-flow4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="event-form" target="event-input">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Soumission formulaire -->
+        <mxCell id="event-submit" value="Soumission&lt;br&gt;Formulaire&lt;br&gt;(POST /add)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="330" y="620" width="160" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-flow5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="event-input" target="event-submit">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Validation données -->
+        <mxCell id="event-validate" value="Validation&lt;br&gt;• Sport non vide&lt;br&gt;• Niveau valide&lt;br&gt;• Date format OK&lt;br&gt;• Lieu sélectionné" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="330" y="740" width="160" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-flow6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="event-submit" target="event-validate">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Traitement lieu -->
+        <mxCell id="event-place" value="Traitement Lieu&lt;br&gt;• Si lieu prédéfini:&lt;br&gt;  → Récupérer coordonnées&lt;br&gt;  → Récupérer transport&lt;br&gt;• Si lieu custom:&lt;br&gt;  → Utiliser saisie manuelle" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="305" y="880" width="210" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-flow7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="event-validate" target="event-place">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Insertion BDD -->
+        <mxCell id="event-insert" value="INSERT INTO events&lt;br&gt;• organisateur = current_user&lt;br&gt;• organizer_id&lt;br&gt;• sport, niveau, lieu&lt;br&gt;• date_heure&lt;br&gt;• latitude, longitude&lt;br&gt;• transport_station, lines&lt;br&gt;• place_id&lt;br&gt;• genre, accessibilite" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="285" y="1040" width="250" height="130" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-flow8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="event-place" target="event-insert">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Attribution points -->
+        <mxCell id="event-points" value="Attribution Points&lt;br&gt;update_user_points&lt;br&gt;(+20 points)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="330" y="1220" width="160" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-flow9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="event-insert" target="event-points">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Flash success -->
+        <mxCell id="event-success" value="Flash Success&lt;br&gt;'Événement créé ! +20 pts'" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="330" y="1340" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-flow10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="event-points" target="event-success">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Redirection index -->
+        <mxCell id="event-redirect" value="Redirection&lt;br&gt;Dashboard (/)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="330" y="1450" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-flow11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="event-success" target="event-redirect">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Fin -->
+        <mxCell id="event-end" value="Fin" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="350" y="1560" width="120" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-flow12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="event-redirect" target="event-end">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- PAGE 3: FLUX PARTICIPATION ÉVÉNEMENT -->
+  <diagram name="3. Participation Événement" id="join-flow">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Début -->
+        <mxCell id="join-start" value="Début&lt;br&gt;(Clic 'Rejoindre')" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="340" y="40" width="140" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Requête AJAX -->
+        <mxCell id="join-ajax" value="Requête AJAX&lt;br&gt;POST /event/{id}/join" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="330" y="150" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="j-flow1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="join-start" target="join-ajax">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Vérification événement existe -->
+        <mxCell id="join-check-event" value="Événement&lt;br&gt;existe ?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="320" y="260" width="180" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="j-flow2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="join-ajax" target="join-check-event">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Erreur 404 -->
+        <mxCell id="join-error-404" value="Return JSON&lt;br&gt;{success: false,&lt;br&gt;message: 'Introuvable'}&lt;br&gt;Status: 404" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcccc;strokeColor=#cc0000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="580" y="270" width="160" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="j-flow3" value="NON" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fontColor=#dc3545;" edge="1" parent="1" source="join-check-event" target="join-error-404">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Vérification annulé -->
+        <mxCell id="join-cancelled" value="Événement&lt;br&gt;annulé ?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="320" y="410" width="180" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="j-flow4" value="OUI" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fontColor=#28a745;" edge="1" parent="1" source="join-check-event" target="join-cancelled">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Erreur annulé -->
+        <mxCell id="join-error-cancel" value="Return JSON&lt;br&gt;{success: false,&lt;br&gt;message: 'Annulé'}&lt;br&gt;Status: 400" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcccc;strokeColor=#cc0000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="580" y="420" width="160" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="j-flow5" value="OUI" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fontColor=#dc3545;" edge="1" parent="1" source="join-cancelled" target="join-error-cancel">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Déjà inscrit ? -->
+        <mxCell id="join-already" value="Déjà&lt;br&gt;inscrit ?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="320" y="560" width="180" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="j-flow6" value="NON" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fontColor=#28a745;" edge="1" parent="1" source="join-cancelled" target="join-already">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Erreur déjà inscrit -->
+        <mxCell id="join-error-duplicate" value="Return JSON&lt;br&gt;{success: false,&lt;br&gt;message: 'Déjà inscrit'}&lt;br&gt;Status: 400" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcccc;strokeColor=#cc0000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="580" y="570" width="160" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="j-flow7" value="OUI" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fontColor=#dc3545;" edge="1" parent="1" source="join-already" target="join-error-duplicate">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Créer participation -->
+        <mxCell id="join-create" value="INSERT Participation&lt;br&gt;• user_id&lt;br&gt;• event_id&lt;br&gt;• points_awarded = 50" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="315" y="710" width="190" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="j-flow8" value="NON" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fontColor=#28a745;" edge="1" parent="1" source="join-already" target="join-create">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Update points utilisateur -->
+        <mxCell id="join-points" value="Update User Points&lt;br&gt;update_user_points&lt;br&gt;(+50 points)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="330" y="840" width="160" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="j-flow9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="join-create" target="join-points">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Return success -->
+        <mxCell id="join-success" value="Return JSON&lt;br&gt;{success: true,&lt;br&gt;message: '+50 pts !',&lt;br&gt;new_points: X}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="320" y="960" width="180" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="j-flow10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="join-points" target="join-success">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- JavaScript update UI -->
+        <mxCell id="join-ui-update" value="JavaScript&lt;br&gt;• Update points navbar&lt;br&gt;• Show success alert&lt;br&gt;• Reload page (1s)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="320" y="1090" width="180" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="j-flow11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="join-success" target="join-ui-update">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Fin -->
+        <mxCell id="join-end" value="Fin" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="350" y="1220" width="120" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="j-flow12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="join-ui-update" target="join-end">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- PAGE 4: FLUX CHATBOT -->
+  <diagram name="4. Chatbot Coach Sport+" id="chatbot-flow">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Début -->
+        <mxCell id="chat-start" value="Début&lt;br&gt;(Clic '⚽ Coach')" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="340" y="40" width="140" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Ouvrir fenêtre -->
+        <mxCell id="chat-open" value="Ouvrir fenêtre chat&lt;br&gt;toggleChatbot()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="330" y="150" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c-flow1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="chat-start" target="chat-open">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Historique vide ? -->
+        <mxCell id="chat-history" value="Historique&lt;br&gt;vide ?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="320" y="260" width="180" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c-flow2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="chat-open" target="chat-history">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Afficher bienvenue -->
+        <mxCell id="chat-welcome" value="Afficher message&lt;br&gt;de bienvenue&lt;br&gt;'Salut champion !'" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="580" y="270" width="160" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c-flow3" value="OUI" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fontColor=#28a745;" edge="1" parent="1" source="chat-history" target="chat-welcome">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Attente message -->
+        <mxCell id="chat-wait" value="Attente saisie&lt;br&gt;message utilisateur" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="320" y="410" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c-flow4" value="NON" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fontColor=#dc3545;" edge="1" parent="1" source="chat-history" target="chat-wait">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c-flow4b" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="chat-welcome" target="chat-wait">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="660" y="440" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Saisie message -->
+        <mxCell id="chat-input" value="Utilisateur tape&lt;br&gt;message et envoie&lt;br&gt;(Enter ou clic)" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="320" y="520" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c-flow5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="chat-wait" target="chat-input">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Afficher message user -->
+        <mxCell id="chat-show-user" value="Afficher message&lt;br&gt;utilisateur (droite)&lt;br&gt;+ Historique" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="330" y="640" width="160" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c-flow6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="chat-input" target="chat-show-user">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Indicateur frappe -->
+        <mxCell id="chat-typing" value="Afficher indicateur&lt;br&gt;de frappe (...)&lt;br&gt;isTyping = true" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="330" y="760" width="160" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c-flow7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="chat-show-user" target="chat-typing">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Requête API -->
+        <mxCell id="chat-api-call" value="POST /api/chatbot&lt;br&gt;{message, history}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="330" y="880" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c-flow8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="chat-typing" target="chat-api-call">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Backend: Construire messages -->
+        <mxCell id="chat-build-msg" value="Backend: Construire&lt;br&gt;messages array&lt;br&gt;• System prompt&lt;br&gt;• Historique (10 max)&lt;br&gt;• Message actuel" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="310" y="990" width="200" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c-flow9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="chat-api-call" target="chat-build-msg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Appel Albert API -->
+        <mxCell id="chat-albert" value="Appel Albert API&lt;br&gt;POST /v1/chat/completions&lt;br&gt;model: AgentPublic/albertlight-7b&lt;br&gt;Bearer token" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcccc;strokeColor=#cc0000;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="295" y="1130" width="230" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c-flow10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="chat-build-msg" target="chat-albert">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Réponse OK ? -->
+        <mxCell id="chat-response-ok" value="Status&lt;br&gt;200 OK ?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="320" y="1260" width="180" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c-flow11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="chat-albert" target="chat-response-ok">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Erreur API -->
+        <mxCell id="chat-error" value="Return Error JSON&lt;br&gt;{success: false,&lt;br&gt;message: 'Problème&lt;br&gt;technique'}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcccc;strokeColor=#cc0000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="580" y="1270" width="160" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c-flow12" value="NON" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fontColor=#dc3545;" edge="1" parent="1" source="chat-response-ok" target="chat-error">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Extraire réponse -->
+        <mxCell id="chat-extract" value="Extraire réponse&lt;br&gt;choices[0].message.content" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="320" y="1410" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c-flow13" value="OUI" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fontColor=#28a745;" edge="1" parent="1" source="chat-response-ok" target="chat-extract">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Return success -->
+        <mxCell id="chat-return" value="Return Success JSON&lt;br&gt;{success: true,&lt;br&gt;message: réponse}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="320" y="1520" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c-flow14" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="chat-extract" target="chat-return">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Frontend: masquer typing -->
+        <mxCell id="chat-hide-typing" value="Frontend:&lt;br&gt;• Masquer indicateur&lt;br&gt;• isTyping = false" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="320" y="1640" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c-flow15" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="chat-return" target="chat-hide-typing">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Afficher réponse -->
+        <mxCell id="chat-show-bot" value="Afficher réponse bot&lt;br&gt;(gauche avec ⚽)&lt;br&gt;+ Historique" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="320" y="1760" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c-flow16" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="chat-hide-typing" target="chat-show-bot">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Retour attente -->
+        <mxCell id="c-flow17" value="Nouveau&lt;br&gt;message" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1;fontStyle=1;" edge="1" parent="1" source="chat-show-bot" target="chat-wait">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="60" y="1795" />
+              <mxPoint x="60" y="440" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Fermer -->
+        <mxCell id="chat-close-check" value="Fermer&lt;br&gt;fenêtre ?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="320" y="1880" width="180" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c-flow18" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="chat-show-bot" target="chat-close-check">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Fin -->
+        <mxCell id="chat-end" value="Fin" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="350" y="2030" width="120" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c-flow19" value="OUI" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;fontColor=#28a745;" edge="1" parent="1" source="chat-close-check" target="chat-end">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c-flow20" value="NON" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;dashed=1;fontStyle=1;fontColor=#dc3545;" edge="1" parent="1" source="chat-close-check" target="chat-wait">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="530" y="1930" />
+              <mxPoint x="760" y="1930" />
+              <mxPoint x="760" y="440" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- PAGE 5: VUE D'ENSEMBLE -->
+  <diagram name="5. Vue d'ensemble" id="overview">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Titre -->
+        <mxCell id="title" value="Vue d'ensemble - Algorigramme Sport Connect" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;fontColor=#667eea;" vertex="1" parent="1">
+          <mxGeometry x="320" y="20" width="530" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Entrée -->
+        <mxCell id="entry" value="Utilisateur&lt;br&gt;accède au site" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="505" y="80" width="160" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Authentification -->
+        <mxCell id="ov-auth" value="1. AUTHENTIFICATION&lt;br&gt;• Login / Register&lt;br&gt;• Validation&lt;br&gt;• Création session" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="485" y="200" width="200" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ov-flow1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;" edge="1" parent="1" source="entry" target="ov-auth">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Dashboard -->
+        <mxCell id="ov-dashboard" value="DASHBOARD&lt;br&gt;(Index)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="505" y="340" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ov-flow2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;" edge="1" parent="1" source="ov-auth" target="ov-dashboard">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Actions principales -->
+        <mxCell id="ov-create" value="2. CRÉER ÉVÉNEMENT&lt;br&gt;• Formulaire&lt;br&gt;• Validation&lt;br&gt;• Insert BDD&lt;br&gt;• +20 points" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="100" y="480" width="180" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ov-flow3" value="Proposer" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;" edge="1" parent="1" source="ov-dashboard" target="ov-create">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="585" y="440" />
+              <mxPoint x="190" y="440" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="ov-join" value="3. REJOINDRE&lt;br&gt;• Vérifications&lt;br&gt;• Créer participation&lt;br&gt;• +50 points&lt;br&gt;• Update UI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="340" y="480" width="180" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ov-flow4" value="Rejoindre" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;" edge="1" parent="1" source="ov-dashboard" target="ov-join">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ov-chat" value="4. CHATBOT ⚽&lt;br&gt;• Ouvrir fenêtre&lt;br&gt;• Envoyer message&lt;br&gt;• API Albert&lt;br&gt;• Afficher réponse" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcccc;strokeColor=#cc0000;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="580" y="480" width="180" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ov-flow5" value="Coach" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;" edge="1" parent="1" source="ov-dashboard" target="ov-chat">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ov-profile" value="5. PROFIL&lt;br&gt;• Voir événements&lt;br&gt;• Statistiques&lt;br&gt;• Gamification" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="820" y="480" width="180" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ov-flow6" value="Profil" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;fontStyle=1;" edge="1" parent="1" source="ov-dashboard" target="ov-profile">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="585" y="440" />
+              <mxPoint x="910" y="440" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Composants système -->
+        <mxCell id="ov-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;verticalAlign=top;fontSize=12;fontStyle=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="640" width="940" height="140" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ov-box-title" value="COMPOSANTS SYSTÈME" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="450" y="650" width="270" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ov-db" value="SQLite DB&lt;br&gt;• users&lt;br&gt;• events&lt;br&gt;• participations&lt;br&gt;• messages&lt;br&gt;• places" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="120" y="690" width="120" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ov-gamif" value="Gamification&lt;br&gt;• Points&lt;br&gt;• Niveaux&lt;br&gt;• Progression" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="280" y="690" width="120" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ov-auth-sys" value="Flask-Login&lt;br&gt;• Sessions&lt;br&gt;• Permissions&lt;br&gt;• @login_required" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="440" y="690" width="120" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ov-geo" value="Géolocalisation&lt;br&gt;• Latitude/Longitude&lt;br&gt;• Lieux prédéfinis&lt;br&gt;• Transport" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="600" y="690" width="120" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ov-albert" value="Albert API&lt;br&gt;• IA État FR&lt;br&gt;• Coach sportif&lt;br&gt;• REST API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffcccc;strokeColor=#cc0000;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="760" y="690" width="120" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ov-admin" value="Admin Panel&lt;br&gt;• Lieux&lt;br&gt;• Événements&lt;br&gt;• Utilisateurs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="920" y="690" width="90" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Légende -->
+        <mxCell id="leg-title" value="LÉGENDE" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="100" y="20" width="100" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="leg1" value="Processus" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="100" y="55" width="80" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="leg2" value="Décision" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="110" y="95" width="60" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="leg3" value="Entrée/Sortie" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="100" y="145" width="80" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="leg4" value="Début/Fin" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="110" y="185" width="60" height="40" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+</mxfile>

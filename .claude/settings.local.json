@@ -9,7 +9,12 @@
       "Bash(pip install:*)",
       "Bash(python app.py:*)",
       "Bash(timeout:*)",
-      "Bash(python migrations/add_geolocation.py:*)"
+      "Bash(python migrations/add_geolocation.py:*)",
+      "Bash(.venvScriptspython.exe -m pip install requests)",
+      "Bash(python:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(curl:*)"
     ]
   }
 }
