@@ -1,142 +1,180 @@
-# Sport Connect
+# 🤖 Coach Sport+ - Chatbot IA
 
-Application web de mise en relation entre personnes souhaitant pratiquer des activités sportives ensemble.
+Un assistant virtuel intelligent pour conseiller les enfants et leurs parents sur les activités sportives, propulsé par l'API Albert (IA de l'État français).
 
-## Description
+## 🎯 Fonctionnalités
 
-Sport Connect est une plateforme web permettant aux utilisateurs de proposer et de rejoindre des activités sportives. L'application facilite la création de groupes sportifs et encourage l'engagement à travers un système de gamification.
+- **Expert en sport pour enfants** : Conseils adaptés à l'âge et au niveau
+- **Ton encourageant** : Motivation et positivité pour stimuler l'engagement
+- **Conseils pratiques** : Nutrition, hydratation, sécurité, échauffement
+- **Règles de jeu** : Explications simples et ludiques des différents sports
+- **Interface moderne** : Chat responsive avec animations fluides
 
-## Fonctionnalités
+## 🚀 Installation
 
-- **Proposer une activité sportive** : Les utilisateurs peuvent créer des annonces pour organiser des activités
-- **Consulter les activités disponibles** : Affichage de toutes les activités proposées avec leurs détails
-- **Rejoindre un groupe** : Mise en relation instantanée avec les organisateurs
-- **Système de gamification** : Points, niveaux et progression pour encourager la participation
-- **Accessibilité** : Filtrage des activités accessibles aux personnes à mobilité réduite
+### 1. Configuration de l'API Albert
 
-## Technologies utilisées
+1. Créez un compte sur [Albert API](https://albert.api.etalab.gouv.fr)
+2. Obtenez votre clé API
+3. Copiez `config.example.py` vers `config.py`
+4. Remplissez vos informations dans `config.py` :
 
-- **Backend** : Flask (Python)
-- **Base de données** : SQLite
-- **Frontend** : Bootstrap 5, HTML5, JavaScript
-- **Design** : Interface responsive et moderne
-
-## Structure du projet
-
-```
-sport_connect/
-├── app.py                 # Application Flask principale
-├── requirements.txt       # Dépendances Python du projet
-├── database.db            # Base de données SQLite (généré automatiquement)
-├── static/
-│   └── logo.png          # Logo de l'application
-├── templates/
-│   ├── index.html        # Page d'accueil avec liste des activités
-│   └── add.html          # Formulaire d'ajout d'activité
-└── .venv/                # Environnement virtuel Python (non versionné)
+```python
+ALBERT_API_URL = "https://albert.api.etalab.gouv.fr/v1"
+ALBERT_API_KEY = "votre-cle-api-ici"
 ```
 
-## Installation
+### 2. Installation des dépendances
 
-### Prérequis
-
-- Python 3.7 ou supérieur
-- pip (gestionnaire de paquets Python)
-
-### Étapes d'installation
-
-1. Cloner le projet :
-```bash
-git clone <url-du-repo>
-cd sport_connect
-```
-
-2. Créer et activer un environnement virtuel :
-```bash
-# Windows
-python -m venv .venv
-.venv\Scripts\activate
-
-# macOS/Linux
-python3 -m venv .venv
-source .venv/bin/activate
-```
-
-3. Installer les dépendances :
 ```bash
 pip install -r requirements.txt
 ```
 
-**Note** : Le fichier `requirements.txt` contient toutes les dépendances nécessaires (Flask, Jinja2, Werkzeug, etc.). Vous n'avez plus besoin de les installer manuellement une par une.
+### 3. Lancement
 
-4. Lancer l'application :
 ```bash
 python app.py
 ```
 
-5. Accéder à l'application :
-Ouvrir un navigateur et aller à l'adresse : `http://localhost:5000`
+Le chatbot sera automatiquement disponible dans la navbar pour tous les utilisateurs connectés.
 
-## Utilisation
+## 💬 Utilisation
 
-### Proposer une activité
+1. **Connectez-vous** à votre compte Sport Connect
+2. **Cliquez sur le bouton "⚽ Coach"** dans la navbar (en haut à droite)
+3. **Posez vos questions** au coach sportif
 
-1. Cliquer sur le bouton "Proposer une activité" sur la page d'accueil
-2. Remplir le formulaire avec les informations suivantes :
-   - Votre prénom (organisateur)
-   - Sport proposé (Running, Tennis, Yoga, Football)
-   - Niveau attendu (Débutant, Intermédiaire, Expert)
-   - Lieu et horaire
-   - Option d'accessibilité PMR/Handicap
-3. Cliquer sur "Publier l'annonce"
+### Exemples de questions
 
-### Rejoindre une activité
+- "Quel sport est adapté pour un enfant de 7 ans ?"
+- "Comment bien s'échauffer avant de jouer au football ?"
+- "Quels sont les bienfaits du yoga pour les enfants ?"
+- "Comment rester motivé pour faire du sport régulièrement ?"
+- "Quelles sont les règles du basketball ?"
+- "Que manger avant et après le sport ?"
 
-1. Parcourir les activités disponibles sur la page d'accueil
-2. Cliquer sur "Rejoindre le groupe" sur l'activité souhaitée
-3. Un système de chat de groupe sera ouvert pour communiquer avec l'organisateur
-4. Gagner des points de gamification pour chaque participation
+## 🎨 Interface
 
-## Base de données
+### Desktop
+- **Bouton dans la navbar** : Dégradé orange-rouge, à côté du profil utilisateur
+- **Fenêtre de chat** : Popup fixe en bas à droite (380x550px)
+- **Messages** : Bulles différenciées pour l'utilisateur et le coach
+- **Animation** : Indicateur de frappe pendant que le coach réfléchit
 
-La base de données SQLite contient une table `events` avec les champs suivants :
+### Mobile
+- **Bouton flottant** : En bas à droite de l'écran
+- **Fenêtre plein écran** : Pour une meilleure expérience tactile
+- **Interface optimisée** : Tailles et espacements adaptés
 
-| Champ | Type | Description |
-|-------|------|-------------|
-| id | INTEGER | Identifiant unique (clé primaire auto-incrémentée) |
-| organisateur | TEXT | Nom de l'organisateur |
-| sport | TEXT | Type de sport |
-| niveau | TEXT | Niveau requis |
-| lieu | TEXT | Lieu de l'activité |
-| date_heure | TEXT | Date et heure de l'activité |
-| accessibilite | TEXT | Indicateur d'accessibilité PMR |
+## 🔧 Architecture technique
 
-## Système de gamification
+### Backend (`app.py`)
+```python
+@app.route('/api/chatbot', methods=['POST'])
+@login_required
+def chatbot():
+    # Gère les requêtes vers l'API Albert
+    # Maintient l'historique de conversation
+    # Retourne les réponses formatées
+```
 
-L'application intègre un système de gamification simulé comprenant :
-- **Points** : Gagner 50 points en rejoignant une activité
-- **Niveaux** : Progression de "Explorateur Sportif" à "Athlète confirmé"
-- **Barre de progression** : Visualisation de l'avancement vers le niveau suivant
+### Frontend (`main.js`)
+- Gestion de l'état du chatbot
+- Affichage des messages
+- Communication AJAX avec le backend
+- Animations et interactions utilisateur
 
-## Développement futur
+### Styles (`style.css`)
+- Design moderne et responsive
+- Animations fluides
+- Thème cohérent avec Sport Connect
 
-Fonctionnalités envisagées :
-- Authentification utilisateur
-- Système de messagerie intégré
-- Notifications en temps réel
-- Géolocalisation des activités
-- Système de notation et avis
-- Application mobile
-- Intégration d'API de paiement pour activités payantes
+## 🔒 Sécurité
 
-## Contexte du projet
+⚠️ **IMPORTANT** : Ne versionnez JAMAIS le fichier `config.py` contenant votre clé API !
 
-Ce projet a été développé dans le cadre de l'initiative **Sove For Tomorrow (SFT) 2026**, visant à promouvoir l'activité physique et la création de liens sociaux à travers le sport.
+Le fichier est déjà ajouté au `.gitignore` :
+```
+# Configuration avec clés API
+config.py
+```
 
-## Licence
+### Bonnes pratiques
 
-Ce projet est un MVP (Minimum Viable Product) développé à des fins éducatives et de démonstration.
+1. ✅ Utilisez `config.example.py` comme template
+2. ✅ Ne partagez jamais votre clé API
+3. ✅ Régénérez votre clé si elle est compromise
+4. ✅ Utilisez des variables d'environnement en production
 
-## Auteur
+## 📊 Modèle utilisé
 
-Développé dans le cadre du projet Sove For Tomorrow - MVP 2026
+**AgentPublic/albertlight-7b**
+- Modèle de langage français de l'État
+- Optimisé pour les services publics
+- Spécialisé pour le contexte français
+
+### Paramètres
+```python
+{
+    "temperature": 0.7,  # Créativité modérée
+    "max_tokens": 500,   # Réponses concises
+    "stream": False      # Réponse complète
+}
+```
+
+## 🎯 Personnalisation du prompt
+
+Modifiez `CHATBOT_SYSTEM_PROMPT` dans `config.py` pour adapter :
+- Le ton du coach
+- Le niveau de langue
+- Les domaines d'expertise
+- Les restrictions
+
+### Exemple de modification
+
+```python
+CHATBOT_SYSTEM_PROMPT = """Tu es Coach Sport+, un expert en sports collectifs pour adolescents.
+
+Ton rôle :
+- Conseiller sur le football, basketball, volleyball
+- Promouvoir l'esprit d'équipe et le fair-play
+- Donner des tactiques et stratégies de jeu
+- Encourager la cohésion de groupe
+
+..."""
+```
+
+## 📈 Améliorations futures
+
+- [ ] Sauvegarde des conversations en base de données
+- [ ] Suggestions de réponses rapides
+- [ ] Partage de conversations intéressantes
+- [ ] Statistiques d'utilisation
+- [ ] Mode vocal (speech-to-text)
+- [ ] Multilangue (anglais, espagnol, etc.)
+- [ ] Recommandations d'activités personnalisées
+
+## 🐛 Dépannage
+
+### Le chatbot ne répond pas
+1. Vérifiez votre connexion internet
+2. Vérifiez que la clé API est valide
+3. Consultez la console du navigateur (F12)
+4. Vérifiez les logs Flask
+
+### Erreur "API unavailable"
+- L'API Albert peut être temporairement indisponible
+- Vérifiez le status sur le site d'Albert
+- Attendez quelques minutes et réessayez
+
+### Messages tronqués
+- Augmentez `max_tokens` dans `app.py`
+- Gardez vos questions concises pour de meilleures réponses
+
+## 📝 License
+
+Développé dans le cadre du projet **Sove For Tomorrow (SFT) 2026**
+
+---
+
+**Développé avec ❤️ pour encourager le sport chez les jeunes**
