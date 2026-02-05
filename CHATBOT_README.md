@@ -1,4 +1,4 @@
-# 🤖 Coach Sport+ - Chatbot IA
+# 🤖 Coach Sport+ - Chatbot IA !;;;
 
 Un assistant virtuel intelligent pour conseiller les enfants et leurs parents sur les activités sportives, propulsé par l'API Albert (IA de l'État français).
 
