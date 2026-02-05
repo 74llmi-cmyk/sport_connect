@@ -4,6 +4,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import sqlite3
 import random
+import calendar as cal_module
+from datetime import datetime, date
 
 # Import du modèle User et des fonctions places
 from models import (User, get_user_by_id, get_user_by_username, create_user, update_user_points,
@@ -354,6 +356,141 @@ def map_view():
                          events=event_list,
                          events_json=events_json,
                          sports_list=sports_list)
+
+
+# ===========================
+# ROUTE CALENDRIER
+# ===========================
+
+@app.route('/calendar')
+@login_required
+def calendar_view():
+    """Page calendrier des activités sportives"""
+    # Récupérer le mois demandé (défaut = mois courant)
+    month_param = request.args.get('month', '')
+    try:
+        if month_param:
+            year, month = map(int, month_param.split('-'))
+        else:
+            today = date.today()
+            year, month = today.year, today.month
+    except (ValueError, TypeError):
+        today = date.today()
+        year, month = today.year, today.month
+
+    # Calculer mois précédent et suivant
+    if month == 1:
+        prev_year, prev_month = year - 1, 12
+    else:
+        prev_year, prev_month = year, month - 1
+
+    if month == 12:
+        next_year, next_month = year + 1, 1
+    else:
+        next_year, next_month = year, month + 1
+
+    prev_month_str = f"{prev_year}-{prev_month:02d}"
+    next_month_str = f"{next_year}-{next_month:02d}"
+
+    # Premier et dernier jour du mois
+    first_day_weekday, days_in_month = cal_module.monthrange(year, month)
+
+    # Noms des mois en français
+    mois_fr = {
+        1: 'Janvier', 2: 'Février', 3: 'Mars', 4: 'Avril',
+        5: 'Mai', 6: 'Juin', 7: 'Juillet', 8: 'Août',
+        9: 'Septembre', 10: 'Octobre', 11: 'Novembre', 12: 'Décembre'
+    }
+
+    # Récupérer les événements du mois
+    month_start = f"{year}-{month:02d}-01"
+    month_end = f"{year}-{month:02d}-{days_in_month}"
+
+    conn = sqlite3.connect('database.db')
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+
+    # Essayer d'abord les dates ISO, sinon récupérer tous les événements
+    c.execute("""
+        SELECT * FROM events
+        WHERE is_cancelled = 0
+          AND date_heure >= ? AND date_heure <= ?
+        ORDER BY date_heure ASC
+    """, (month_start, month_end + " 23:59:59"))
+    events = c.fetchall()
+
+    # Si aucun résultat (dates non ISO), récupérer tous les événements actifs
+    if not events:
+        c.execute("""
+            SELECT * FROM events
+            WHERE is_cancelled = 0
+            ORDER BY id DESC
+        """)
+        events = c.fetchall()
+
+    # Grouper les événements par jour
+    events_by_day = {}
+    events_list = []
+    for event in events:
+        ev = dict(event)
+        events_list.append(ev)
+        try:
+            dt_str = event['date_heure']
+            # Tenter d'extraire le jour (format YYYY-MM-DD)
+            if len(dt_str) >= 10 and dt_str[4] == '-' and dt_str[7] == '-':
+                day = int(dt_str[8:10])
+                if day not in events_by_day:
+                    events_by_day[day] = []
+                events_by_day[day].append(ev)
+        except (ValueError, IndexError, TypeError):
+            pass
+
+    conn.close()
+
+    # Construire la grille du calendrier
+    # first_day_weekday : 0=lundi, 6=dimanche
+    calendar_days = []
+    # Cases vides avant le premier jour
+    for _ in range(first_day_weekday):
+        calendar_days.append({'day': None, 'events': []})
+    # Jours du mois
+    for day in range(1, days_in_month + 1):
+        calendar_days.append({
+            'day': day,
+            'events': events_by_day.get(day, []),
+            'is_today': (day == date.today().day and month == date.today().month and year == date.today().year)
+        })
+
+    # Couleurs et icônes par sport
+    sport_colors = {
+        'Running': '#FF6B6B',
+        'Tennis': '#4ECDC4',
+        'Yoga': '#A78BFA',
+        'Football': '#34D399',
+        'Natation': '#60A5FA',
+        'Basketball': '#F59E0B',
+        'Cyclisme': '#F97316',
+    }
+    sport_icons = {
+        'Running': 'bi-person-walking',
+        'Tennis': 'bi-dribbble',
+        'Yoga': 'bi-flower1',
+        'Football': 'bi-trophy-fill',
+        'Natation': 'bi-water',
+        'Basketball': 'bi-dribbble',
+        'Cyclisme': 'bi-bicycle',
+    }
+
+    return render_template('calendar.html',
+                         calendar_days=calendar_days,
+                         events_list=events_list,
+                         month_name=mois_fr[month],
+                         year=year,
+                         month=month,
+                         prev_month=prev_month_str,
+                         next_month=next_month_str,
+                         sport_colors=sport_colors,
+                         sport_icons=sport_icons)
 
 
 # ===========================

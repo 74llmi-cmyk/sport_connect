@@ -14,7 +14,22 @@
       "mcp__chrome-devtools__navigate_page",
       "mcp__chrome-devtools__take_snapshot",
       "mcp__chrome-devtools__take_screenshot",
-      "mcp__chrome-devtools__press_key"
+      "mcp__chrome-devtools__press_key",
+      "Bash(.venvScriptspython.exe app.py)",
+      "Bash(cmd.exe /c \"cd /d \"\"C:\\\\Users\\\\clgmd\\\\Desktop\\\\Projet SFT\\\\sport_connect\"\" && start.bat\")",
+      "Bash(curl:*)",
+      "Bash(sqlite3:*)",
+      "Bash(.venv/Scripts/python.exe:*)",
+      "Bash(taskkill:*)",
+      "Bash(cmd.exe /c \"cd /d \"\"C:\\\\Users\\\\clgmd\\\\Desktop\\\\Projet SFT\\\\sport_connect\"\" && .venv\\\\Scripts\\\\python.exe app.py\")",
+      "Bash(cmd.exe /c \"taskkill /F /IM python.exe\")",
+      "Bash(cmd.exe /c \"for /f \"\"tokens=5\"\" %a in \\(''netstat -ano ^| findstr :5000 ^| findstr LISTENING''\\) do taskkill /F /PID %a\")",
+      "Bash(powershell.exe -Command \"Get-NetTCPConnection -LocalPort 5000 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }\")",
+      "Bash(powershell.exe -Command \"Get-Process python* -ErrorAction SilentlyContinue | Stop-Process -Force; Get-Process pythonw* -ErrorAction SilentlyContinue | Stop-Process -Force\")",
+      "Bash(powershell.exe -Command \"Start-Process -FilePath ''C:/Users/clgmd/Desktop/Projet SFT/sport_connect/.venv/Scripts/python.exe'' -ArgumentList ''C:/Users/clgmd/Desktop/Projet SFT/sport_connect/app.py'' -WorkingDirectory ''C:/Users/clgmd/Desktop/Projet SFT/sport_connect''\")",
+      "Bash(\".venv/Scripts/pip.exe\" install -r requirements.txt)",
+      "Bash(cmd.exe /c \"cd /d \"\"C:\\\\Users\\\\clgmd\\\\Desktop\\\\Projet SFT\\\\sport_connect\"\" && .venv\\\\Scripts\\\\pip.exe install -r requirements.txt\")",
+      "Bash(powershell.exe:*)"
     ]
   }
 }
