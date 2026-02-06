@@ -281,7 +281,10 @@ def index():
     conn.close()
 
     # Liste des sports disponibles (hardcodé pour MVP)
-    sports_list = ['Running', 'Tennis', 'Yoga', 'Football', 'Natation', 'Basketball', 'Cyclisme']
+    sports_list = ['Running', 'Tennis', 'Yoga', 'Football', 'Natation', 'Basketball', 'Cyclisme',
+                   'Roller', 'Volley-ball', 'Danse', 'Judo', 'Karaté', 'Capoeira',
+                   'Ping-pong', 'Patinage', 'Taekwondo', 'Kendo', 'Handball',
+                   'Gymnastique', 'Escrime']
     niveaux_list = ['Débutant', 'Intermédiaire', 'Expert']
     genres_list = ['Mixte', 'Homme', 'Femme']
 
@@ -346,7 +349,10 @@ def map_view():
     conn.close()
 
     # Liste des sports pour les filtres
-    sports_list = ['Running', 'Tennis', 'Yoga', 'Football', 'Natation', 'Basketball', 'Cyclisme']
+    sports_list = ['Running', 'Tennis', 'Yoga', 'Football', 'Natation', 'Basketball', 'Cyclisme',
+                   'Roller', 'Volley-ball', 'Danse', 'Judo', 'Karaté', 'Capoeira',
+                   'Ping-pong', 'Patinage', 'Taekwondo', 'Kendo', 'Handball',
+                   'Gymnastique', 'Escrime']
 
     # Convertir en JSON pour JavaScript
     import json
@@ -410,22 +416,26 @@ def calendar_view():
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
 
-    # Essayer d'abord les dates ISO, sinon récupérer tous les événements
+    # Récupérer uniquement les événements auxquels l'utilisateur participe ou qu'il organise
     c.execute("""
-        SELECT * FROM events
-        WHERE is_cancelled = 0
-          AND date_heure >= ? AND date_heure <= ?
-        ORDER BY date_heure ASC
-    """, (month_start, month_end + " 23:59:59"))
+        SELECT DISTINCT e.* FROM events e
+        LEFT JOIN participations p ON e.id = p.event_id AND p.user_id = ?
+        WHERE e.is_cancelled = 0
+          AND e.date_heure >= ? AND e.date_heure <= ?
+          AND (p.id IS NOT NULL OR e.organizer_id = ?)
+        ORDER BY e.date_heure ASC
+    """, (current_user.id, month_start, month_end + " 23:59:59", current_user.id))
     events = c.fetchall()
 
-    # Si aucun résultat (dates non ISO), récupérer tous les événements actifs
+    # Si aucun résultat avec dates ISO, essayer sans filtre de dates
     if not events:
         c.execute("""
-            SELECT * FROM events
-            WHERE is_cancelled = 0
-            ORDER BY id DESC
-        """)
+            SELECT DISTINCT e.* FROM events e
+            LEFT JOIN participations p ON e.id = p.event_id AND p.user_id = ?
+            WHERE e.is_cancelled = 0
+              AND (p.id IS NOT NULL OR e.organizer_id = ?)
+            ORDER BY e.id DESC
+        """, (current_user.id, current_user.id))
         events = c.fetchall()
 
     # Grouper les événements par jour
@@ -470,6 +480,19 @@ def calendar_view():
         'Natation': '#60A5FA',
         'Basketball': '#F59E0B',
         'Cyclisme': '#F97316',
+        'Roller': '#E879F9',
+        'Volley-ball': '#FB923C',
+        'Danse': '#EC4899',
+        'Judo': '#14B8A6',
+        'Karaté': '#EF4444',
+        'Capoeira': '#F472B6',
+        'Ping-pong': '#8B5CF6',
+        'Patinage': '#38BDF8',
+        'Taekwondo': '#DC2626',
+        'Kendo': '#6366F1',
+        'Handball': '#10B981',
+        'Gymnastique': '#D946EF',
+        'Escrime': '#78716C',
     }
     sport_icons = {
         'Running': 'bi-person-walking',
@@ -479,6 +502,19 @@ def calendar_view():
         'Natation': 'bi-water',
         'Basketball': 'bi-dribbble',
         'Cyclisme': 'bi-bicycle',
+        'Roller': 'bi-lightning-fill',
+        'Volley-ball': 'bi-circle-fill',
+        'Danse': 'bi-music-note-beamed',
+        'Judo': 'bi-shield-fill',
+        'Karaté': 'bi-lightning-charge-fill',
+        'Capoeira': 'bi-music-note',
+        'Ping-pong': 'bi-disc-fill',
+        'Patinage': 'bi-snow2',
+        'Taekwondo': 'bi-fire',
+        'Kendo': 'bi-slash-lg',
+        'Handball': 'bi-hand-index-fill',
+        'Gymnastique': 'bi-person-arms-up',
+        'Escrime': 'bi-slash-circle',
     }
 
     return render_template('calendar.html',

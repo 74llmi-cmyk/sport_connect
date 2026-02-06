@@ -209,6 +209,26 @@
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
 }
 
+/* Highlight animation quand on arrive depuis le calendrier */
+.activity-card.highlight-from-calendar {
+    animation: calendarHighlight 3s ease-out;
+}
+
+@keyframes calendarHighlight {
+    0% {
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.6);
+        border-color: #667eea;
+    }
+    30% {
+        box-shadow: 0 0 0 8px rgba(102, 126, 234, 0.3);
+        border-color: #667eea;
+    }
+    100% {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border-color: transparent;
+    }
+}
+
 .activity-card.event-joined {
     border-color: #28a745;
 }
@@ -1557,6 +1577,29 @@ footer {
     font-size: 10px;
 }
 
+/* Lien cliquable autour de l'icône dans la grille du calendrier */
+.calendar-event-link {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    text-decoration: none;
+    border-radius: 10px;
+    padding: 1px 4px 1px 1px;
+    transition: all 0.2s ease;
+}
+
+.calendar-event-link:hover {
+    background: rgba(0, 0, 0, 0.08);
+    transform: scale(1.1);
+}
+
+.calendar-event-time {
+    font-size: 9px;
+    font-weight: 600;
+    color: #555;
+    white-space: nowrap;
+}
+
 .calendar-event-more {
     font-size: 9px;
     color: #667eea;
@@ -1645,6 +1688,18 @@ footer {
 .calendar-event-card:hover {
     transform: translateX(5px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Lien cliquable autour des cartes d'événements du calendrier */
+.calendar-event-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.calendar-event-card-link:hover {
+    text-decoration: none;
+    color: inherit;
 }
 
 .calendar-event-date-badge {
@@ -1753,6 +1808,14 @@ footer {
     .calendar-event-dot {
         width: 5px;
         height: 5px;
+    }
+
+    .calendar-event-time {
+        display: none;
+    }
+
+    .calendar-event-link {
+        padding: 0;
     }
 
     .calendar-event-count {

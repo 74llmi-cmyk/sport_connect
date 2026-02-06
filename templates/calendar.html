@@ -16,7 +16,7 @@
             </a>
         </div>
         <p class="text-muted mb-0">
-            {{ events_list|length }} activité{{ 's' if events_list|length > 1 else '' }} ce mois
+            {{ events_list|length }} activité{{ 's' if events_list|length > 1 else '' }} inscrite{{ 's' if events_list|length > 1 else '' }} ce mois
         </p>
     </div>
 
@@ -57,9 +57,12 @@
             {% if cell.events %}
             <div class="calendar-event-dots">
                 {% for event in cell.events[:3] %}
-                <span class="calendar-event-icon" style="background: {{ sport_colors.get(event.sport, '#667eea') }};" title="{{ event.sport }} - {{ event.lieu }}">
-                    <i class="bi {{ sport_icons.get(event.sport, 'bi-circle-fill') }}"></i>
-                </span>
+                <a href="/?highlight={{ event.id }}" class="calendar-event-link" title="{{ event.sport }} - {{ event.lieu }}">
+                    <span class="calendar-event-icon" style="background: {{ sport_colors.get(event.sport, '#667eea') }};">
+                        <i class="bi {{ sport_icons.get(event.sport, 'bi-circle-fill') }}"></i>
+                    </span>
+                    <span class="calendar-event-time">{{ event.date_heure[11:16] if event.date_heure|length > 10 else '' }}</span>
+                </a>
                 {% endfor %}
                 {% if cell.events|length > 3 %}
                 <span class="calendar-event-more">+{{ cell.events|length - 3 }}</span>
@@ -77,39 +80,41 @@
         <h4 class="calendar-events-title">Activités du mois</h4>
         <div class="calendar-events-list">
             {% for event in events_list %}
-            <div class="calendar-event-card" style="border-left: 4px solid {{ sport_colors.get(event.sport, '#667eea') }};">
-                <div class="calendar-event-date-badge" style="background: {{ sport_colors.get(event.sport, '#667eea') }};">
-                    <span class="calendar-event-day">{{ event.date_heure[8:10] }}</span>
-                    <span class="calendar-event-month">{{ month_name[:3] }}</span>
-                </div>
-                <div class="calendar-event-info">
-                    <h5 class="calendar-event-sport">
-                        <i class="bi {{ sport_icons.get(event.sport, 'bi-circle-fill') }}" style="color: {{ sport_colors.get(event.sport, '#667eea') }};"></i>
-                        {{ event.sport }}
-                    </h5>
-                    <p class="calendar-event-details">
-                        <i class="bi bi-geo-alt"></i> {{ event.lieu }}
-                        <br>
-                        <i class="bi bi-clock"></i> {{ event.date_heure[11:16] if event.date_heure|length > 10 else event.date_heure }}
-                    </p>
-                    <div class="calendar-event-tags">
-                        <span class="badge bg-primary">{{ event.niveau }}</span>
-                        {% if event.genre and event.genre != 'Mixte' %}
-                        <span class="badge bg-secondary">{{ event.genre }}</span>
-                        {% endif %}
-                        {% if event.accessibilite %}
-                        <span class="badge bg-success">PMR</span>
-                        {% endif %}
+            <a href="/?highlight={{ event.id }}" class="calendar-event-card-link">
+                <div class="calendar-event-card" style="border-left: 4px solid {{ sport_colors.get(event.sport, '#667eea') }};">
+                    <div class="calendar-event-date-badge" style="background: {{ sport_colors.get(event.sport, '#667eea') }};">
+                        <span class="calendar-event-day">{{ event.date_heure[8:10] }}</span>
+                        <span class="calendar-event-month">{{ month_name[:3] }}</span>
+                    </div>
+                    <div class="calendar-event-info">
+                        <h5 class="calendar-event-sport">
+                            <i class="bi {{ sport_icons.get(event.sport, 'bi-circle-fill') }}" style="color: {{ sport_colors.get(event.sport, '#667eea') }};"></i>
+                            {{ event.sport }}
+                        </h5>
+                        <p class="calendar-event-details">
+                            <i class="bi bi-geo-alt"></i> {{ event.lieu }}
+                            <br>
+                            <i class="bi bi-clock"></i> {{ event.date_heure[11:16] if event.date_heure|length > 10 else event.date_heure }}
+                        </p>
+                        <div class="calendar-event-tags">
+                            <span class="badge bg-primary">{{ event.niveau }}</span>
+                            {% if event.genre and event.genre != 'Mixte' %}
+                            <span class="badge bg-secondary">{{ event.genre }}</span>
+                            {% endif %}
+                            {% if event.accessibilite %}
+                            <span class="badge bg-success">PMR</span>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
-            </div>
+            </a>
             {% endfor %}
         </div>
     </div>
     {% else %}
     <div class="calendar-no-events">
         <i class="bi bi-calendar-x"></i>
-        <p>Aucune activité prévue ce mois-ci</p>
+        <p>Aucune activité inscrite ce mois-ci</p>
         <a href="{{ url_for('add') }}" class="btn btn-primary btn-sm">Proposer une activité</a>
     </div>
     {% endif %}

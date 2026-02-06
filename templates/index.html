@@ -11,7 +11,20 @@
     'Football': 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&h=200&fit=crop',
     'Natation': 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=400&h=200&fit=crop',
     'Basketball': 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400&h=200&fit=crop',
-    'Cyclisme': 'https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=400&h=200&fit=crop'
+    'Cyclisme': 'https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=400&h=200&fit=crop',
+    'Roller': 'https://images.unsplash.com/photo-1621354289600-a22bec44aa25?w=400&h=200&fit=crop',
+    'Volley-ball': 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=400&h=200&fit=crop',
+    'Danse': 'https://images.unsplash.com/photo-1547153760-18fc86324498?w=400&h=200&fit=crop',
+    'Judo': 'https://images.unsplash.com/photo-1555597673-b21d5c935865?w=400&h=200&fit=crop',
+    'Karaté': 'https://images.unsplash.com/photo-1555597408-26bc8e548a46?w=400&h=200&fit=crop',
+    'Capoeira': 'https://images.unsplash.com/photo-1627627256672-027a4613d028?w=400&h=200&fit=crop',
+    'Ping-pong': 'https://images.unsplash.com/photo-1534158914592-062992fbe900?w=400&h=200&fit=crop',
+    'Patinage': 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400&h=200&fit=crop',
+    'Taekwondo': 'https://images.unsplash.com/photo-1598518142144-385e3a261b20?w=400&h=200&fit=crop',
+    'Kendo': 'https://images.unsplash.com/photo-1571019613576-2b22c76fd955?w=400&h=200&fit=crop',
+    'Handball': 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&h=200&fit=crop',
+    'Gymnastique': 'https://images.unsplash.com/photo-1566577739112-5180d4bf9390?w=400&h=200&fit=crop',
+    'Escrime': 'https://images.unsplash.com/photo-1515879218367-8466d910aec2?w=400&h=200&fit=crop'
 } %}
 
 <!-- Layout principal à 2 colonnes -->
@@ -623,10 +636,38 @@ function resetNotifications(eventId) {
 
 // Initialiser la carte et les notifications
 document.addEventListener('DOMContentLoaded', function() {
-    // Sélectionner automatiquement la première activité géolocalisée
-    const firstGeoCard = document.querySelector('.activity-card[data-event-id]');
-    if (firstGeoCard) {
-        firstGeoCard.click();
+    // Vérifier si on arrive depuis le calendrier avec un highlight
+    const urlParams = new URLSearchParams(window.location.search);
+    const highlightId = urlParams.get('highlight');
+
+    if (highlightId) {
+        const targetCard = document.querySelector(`.activity-card[data-event-id="${highlightId}"]`);
+        if (targetCard) {
+            // Scroll vers la carte avec animation
+            targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Animation de mise en surbrillance
+            targetCard.classList.add('highlight-from-calendar');
+            // Cliquer pour sélectionner (met à jour le sidepanel)
+            targetCard.click();
+            // Retirer l'animation après 3s
+            setTimeout(function() {
+                targetCard.classList.remove('highlight-from-calendar');
+            }, 3000);
+            // Nettoyer l'URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } else {
+            // Événement non trouvé, comportement par défaut
+            const firstGeoCard = document.querySelector('.activity-card[data-event-id]');
+            if (firstGeoCard) {
+                firstGeoCard.click();
+            }
+        }
+    } else {
+        // Comportement par défaut : sélectionner la première activité
+        const firstGeoCard = document.querySelector('.activity-card[data-event-id]');
+        if (firstGeoCard) {
+            firstGeoCard.click();
+        }
     }
 
     // Démarrer le polling des notifications pour les événements rejoints

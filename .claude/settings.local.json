@@ -29,7 +29,10 @@
       "Bash(powershell.exe -Command \"Start-Process -FilePath ''C:/Users/clgmd/Desktop/Projet SFT/sport_connect/.venv/Scripts/python.exe'' -ArgumentList ''C:/Users/clgmd/Desktop/Projet SFT/sport_connect/app.py'' -WorkingDirectory ''C:/Users/clgmd/Desktop/Projet SFT/sport_connect''\")",
       "Bash(\".venv/Scripts/pip.exe\" install -r requirements.txt)",
       "Bash(cmd.exe /c \"cd /d \"\"C:\\\\Users\\\\clgmd\\\\Desktop\\\\Projet SFT\\\\sport_connect\"\" && .venv\\\\Scripts\\\\pip.exe install -r requirements.txt\")",
-      "Bash(powershell.exe:*)"
+      "Bash(powershell.exe:*)",
+      "Bash(cd:*)",
+      "Bash(wc:*)",
+      "Bash(python:*)"
     ]
   }
 }
