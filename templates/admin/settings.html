@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Administration - Réglages{% endblock %}
+
+{% block content %}
+<div class="admin-header mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2>Réglages</h2>
+        <div>
+            <a href="{{ url_for('admin_places') }}" class="btn btn-outline-secondary me-2">Lieux</a>
+            <a href="{{ url_for('admin_events') }}" class="btn btn-outline-secondary me-2">Activités</a>
+            <a href="{{ url_for('admin_users') }}" class="btn btn-outline-secondary">Utilisateurs</a>
+        </div>
+    </div>
+    <p class="text-muted">Configurez les paramètres de l'application.</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <!-- Chatbot Sporty -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white d-flex align-items-center gap-2">
+                <span style="font-size: 24px;">🤖</span>
+                <h5 class="mb-0">Chatbot Sporty - API Albert</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">
+                    Sporty utilise l'IA <strong>Albert</strong> (API du gouvernement français) pour répondre aux questions des utilisateurs.
+                    Renseignez votre clé API pour activer le chatbot.
+                </p>
+
+                <form method="post" action="{{ url_for('admin_settings') }}">
+                    <div class="mb-3">
+                        <label for="albert_api_key" class="form-label fw-bold">Clé API Albert</label>
+                        <div class="input-group">
+                            <input type="password"
+                                   name="albert_api_key"
+                                   id="albert_api_key"
+                                   class="form-control"
+                                   value="{{ albert_api_key }}"
+                                   placeholder="Collez votre clé API ici...">
+                            <button type="button" class="btn btn-outline-secondary" onclick="toggleApiKey()" title="Afficher/masquer">
+                                <i class="bi bi-eye" id="toggle-eye"></i>
+                            </button>
+                        </div>
+                        <small class="form-text text-muted">
+                            Obtenez votre clé sur <a href="https://albert.api.etalab.gouv.fr" target="_blank">albert.api.etalab.gouv.fr</a>
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">URL de l'API</label>
+                        <input type="text" class="form-control" value="https://albert.api.etalab.gouv.fr/v1" disabled>
+                        <small class="form-text text-muted">URL pré-configurée (non modifiable)</small>
+                    </div>
+
+                    <!-- Statut -->
+                    <div class="alert {% if albert_api_key %}alert-success{% else %}alert-warning{% endif %} d-flex align-items-center gap-2">
+                        {% if albert_api_key %}
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span>Clé API configurée - Sporty est <strong>actif</strong></span>
+                        {% else %}
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <span>Aucune clé API - Sporty est <strong>inactif</strong></span>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Sauvegarder
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleApiKey() {
+    const input = document.getElementById('albert_api_key');
+    const icon = document.getElementById('toggle-eye');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+}
+</script>
+{% endblock %}

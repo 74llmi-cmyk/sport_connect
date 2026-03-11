@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Calendrier - Sport Connect{% endblock %}
+{% block title %}Calendrier - Olympus{% endblock %}
 
 {% block content %}
 <div class="calendar-container">
@@ -29,7 +29,7 @@
                 {% if sports_present.append(event.sport) %}{% endif %}
                 <span class="calendar-legend-item">
                     <span class="calendar-legend-icon" style="background: {{ sport_colors.get(event.sport, '#667eea') }};">
-                        <i class="bi {{ sport_icons.get(event.sport, 'bi-circle-fill') }}"></i>
+                        {{ sport_icons.get(event.sport, '🏅') }}
                     </span>
                     {{ event.sport }}
                 </span>
@@ -55,13 +55,13 @@
             {% if cell.day %}
             <span class="calendar-day-number">{{ cell.day }}</span>
             {% if cell.events %}
-            <div class="calendar-event-dots">
+            <div class="calendar-sport-icons">
                 {% for event in cell.events[:3] %}
-                <a href="/?highlight={{ event.id }}" class="calendar-event-link" title="{{ event.sport }} - {{ event.lieu }}">
-                    <span class="calendar-event-icon" style="background: {{ sport_colors.get(event.sport, '#667eea') }};">
-                        <i class="bi {{ sport_icons.get(event.sport, 'bi-circle-fill') }}"></i>
+                <a href="/?highlight={{ event.id }}" class="calendar-sport-entry" title="{{ event.sport }} - {{ event.lieu }}">
+                    <span class="calendar-sport-icon" style="background: {{ sport_colors.get(event.sport, '#667eea') }};">
+                        {{ sport_icons.get(event.sport, '🏅') }}
                     </span>
-                    <span class="calendar-event-time">{{ event.date_heure[11:16] if event.date_heure|length > 10 else '' }}</span>
+                    {% if event.parsed_time %}<span class="calendar-sport-time">{{ event.parsed_time }}</span>{% endif %}
                 </a>
                 {% endfor %}
                 {% if cell.events|length > 3 %}
@@ -88,13 +88,13 @@
                     </div>
                     <div class="calendar-event-info">
                         <h5 class="calendar-event-sport">
-                            <i class="bi {{ sport_icons.get(event.sport, 'bi-circle-fill') }}" style="color: {{ sport_colors.get(event.sport, '#667eea') }};"></i>
+                            {{ sport_icons.get(event.sport, '🏅') }}
                             {{ event.sport }}
                         </h5>
                         <p class="calendar-event-details">
                             <i class="bi bi-geo-alt"></i> {{ event.lieu }}
                             <br>
-                            <i class="bi bi-clock"></i> {{ event.date_heure[11:16] if event.date_heure|length > 10 else event.date_heure }}
+                            <i class="bi bi-clock"></i> {{ event.date_heure }}{% if event.parsed_time %} ({{ event.parsed_time }}){% endif %}
                         </p>
                         <div class="calendar-event-tags">
                             <span class="badge bg-primary">{{ event.niveau }}</span>

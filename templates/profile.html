@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Mon Profil - Sport Connect{% endblock %}
+{% block title %}Mon Profil - Olympus{% endblock %}
 
 {% block content %}
 <!-- En-tête du profil -->
@@ -63,6 +63,11 @@
     <li class="nav-item" role="presentation">
         <button class="nav-link" id="participated-tab" data-bs-toggle="tab" data-bs-target="#participated" type="button" role="tab">
             Mes participations
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="favorites-tab" data-bs-toggle="tab" data-bs-target="#favorites" type="button" role="tab">
+            &#9829; Mes favoris <span class="badge bg-danger ms-1" id="fav-count" style="display:none;"></span>
         </button>
     </li>
 </ul>
@@ -170,10 +175,109 @@
     </div>
 </div>
 
+    <!-- Onglet Favoris -->
+    <div class="tab-pane fade" id="favorites" role="tabpanel">
+        <!-- Sports favoris -->
+        <div id="fav-sports-section" class="mb-4" style="display:none;">
+            <h6 class="text-muted mb-2">Sports favoris</h6>
+            <div id="fav-sports-chips" class="d-flex flex-wrap gap-2 mb-3"></div>
+        </div>
+
+        <!-- Activités correspondantes -->
+        <div id="fav-events-container"></div>
+    </div>
+</div>
+
 <!-- Retour à l'accueil -->
 <div class="text-center mt-5">
     <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
         ← Retour aux activités
     </a>
 </div>
+
+<script>
+const allEvents = {{ all_events | tojson }};
+
+function renderFavorites() {
+    const favoriteSports = JSON.parse(localStorage.getItem('favoriteSports_{{ current_user.id }}') || '[]');
+    const countBadge = document.getElementById('fav-count');
+    const sportsSection = document.getElementById('fav-sports-section');
+    const sportsChips = document.getElementById('fav-sports-chips');
+    const container = document.getElementById('fav-events-container');
+
+    // Chips sports favoris
+    if (favoriteSports.length > 0) {
+        sportsSection.style.display = 'block';
+        sportsChips.innerHTML = favoriteSports.map(s =>
+            `<span class="badge rounded-pill" style="background:#ff69b4; font-size:0.9rem; padding:6px 14px;">&#9829; ${s}</span>`
+        ).join('');
+    } else {
+        sportsSection.style.display = 'none';
+    }
+
+    // Filtrer les événements dont le sport est favori
+    const favEvents = allEvents.filter(e => favoriteSports.includes(e.sport));
+
+    // Badge de comptage sur l'onglet
+    if (favEvents.length > 0) {
+        countBadge.textContent = favEvents.length;
+        countBadge.style.display = '';
+    } else {
+        countBadge.style.display = 'none';
+    }
+
+    if (favEvents.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">&#9825;</div>
+                <h5>Aucun favori pour l'instant</h5>
+                <p class="text-muted">Clique sur le &#9825; d'une activité ou d'un sport dans le Coach pour l'ajouter ici.</p>
+                <a href="{{ url_for('index') }}" class="btn btn-primary mt-3">Découvrir les activités</a>
+            </div>`;
+        return;
+    }
+
+    const niveauClass = n => n === 'Débutant' ? 'niveau-debutant' : n === 'Intermédiaire' ? 'niveau-intermediaire' : 'niveau-expert';
+
+    container.innerHTML = `
+        <div class="table-responsive">
+            <table class="table table-events">
+                <thead>
+                    <tr>
+                        <th>Sport</th>
+                        <th>Niveau</th>
+                        <th>Lieu</th>
+                        <th>Date et heure</th>
+                        <th>Organisateur</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${favEvents.map(e => `
+                    <tr>
+                        <td><span style="color:#ff69b4;">&#9829;</span> <strong>${e.sport}</strong></td>
+                        <td><span class="badge ${niveauClass(e.niveau)}">${e.niveau}</span></td>
+                        <td>${e.lieu}</td>
+                        <td>${e.date_heure}</td>
+                        <td>${e.organizer}</td>
+                        <td><a href="/?highlight=${e.id}" class="btn btn-sm btn-outline-primary">Voir</a></td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>
+        </div>`;
+}
+
+// Initialiser quand l'onglet favoris est ouvert
+document.getElementById('favorites-tab').addEventListener('shown.bs.tab', renderFavorites);
+// Pré-charger le badge au démarrage
+document.addEventListener('DOMContentLoaded', function() {
+    const favoriteSports = JSON.parse(localStorage.getItem('favoriteSports_{{ current_user.id }}') || '[]');
+    const favEvents = allEvents.filter(e => favoriteSports.includes(e.sport));
+    const badge = document.getElementById('fav-count');
+    if (favEvents.length > 0) {
+        badge.textContent = favEvents.length;
+        badge.style.display = '';
+    }
+});
+</script>
 {% endblock %}

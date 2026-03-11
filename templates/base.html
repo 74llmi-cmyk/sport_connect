@@ -3,20 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Sport Connect - SFT 2026{% endblock %}</title>
+    <title>{% block title %}OLYMPUS - SFT 2026{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=2">
 </head>
 <body class="bg-light">
 
     <!-- Navbar principale -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white mb-4 shadow-sm">
         <div class="container">
             <!-- Logo et nom -->
             <a class="navbar-brand" href="{{ url_for('index') }}">
                 <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="rounded-circle" style="height: 40px; margin-right: 10px;">
-                Sport Connect
+                <span class="olympus-brand">OLYMPUS</span>
             </a>
 
             <!-- Bouton toggle pour mobile -->
@@ -30,7 +32,7 @@
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('index') }}">
-                            🏃 Activités
+                            🏠 Accueil
                         </a>
                     </li>
                     <li class="nav-item">
@@ -43,6 +45,12 @@
                             ➕ Proposer
                         </a>
                     </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('coach') }}">
+                            🏋️ Coach Sport
+                        </a>
+                    </li>
                     {% if current_user.is_admin %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle text-warning" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -52,6 +60,8 @@
                             <li><a class="dropdown-item" href="{{ url_for('admin_places') }}">Lieux</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('admin_events') }}">Activités</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('admin_users') }}">Utilisateurs</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin_settings') }}">Réglages</a></li>
                         </ul>
                     </li>
                     {% endif %}
@@ -131,9 +141,12 @@
     <!-- Footer optionnel -->
     <footer class="mt-5 py-3 bg-dark text-white text-center">
         <div class="container">
-            <small>Sport Connect - Solve For Tomorrow 2026</small>
+            <small><span class="olympus-brand-sm">OLYMPUS</span> — Solve For Tomorrow 2026</small>
         </div>
     </footer>
+
+    {% if current_user.is_authenticated %}
+    {% endif %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='main.js') }}"></script>

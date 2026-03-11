@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Activités disponibles - Sport Connect{% endblock %}
+{% block title %}Activités disponibles - Olympus{% endblock %}
 
 {% block content %}
 <!-- Images par sport -->
@@ -24,7 +24,8 @@
     'Kendo': 'https://images.unsplash.com/photo-1571019613576-2b22c76fd955?w=400&h=200&fit=crop',
     'Handball': 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&h=200&fit=crop',
     'Gymnastique': 'https://images.unsplash.com/photo-1566577739112-5180d4bf9390?w=400&h=200&fit=crop',
-    'Escrime': 'https://images.unsplash.com/photo-1515879218367-8466d910aec2?w=400&h=200&fit=crop'
+    'Escrime': 'https://images.unsplash.com/photo-1515879218367-8466d910aec2?w=400&h=200&fit=crop',
+    'Ski': 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400&h=200&fit=crop'
 } %}
 
 <!-- Layout principal à 2 colonnes -->
@@ -85,14 +86,24 @@
                 {% for item in events %}
                 <div class="activity-card {% if item.user_joined %}event-joined{% endif %}"
                      onclick="selectActivity({{ item.event.id }}, '{{ item.event.sport }}', '{{ item.event.lieu }}', '{{ item.event.date_heure }}', '{{ item.organizer_name }}', {{ item.event.latitude or 'null' }}, {{ item.event.longitude or 'null' }}, '{{ item.event.accessibilite or '' }}', {{ item.participant_count }}, '{{ item.event.transport_station or '' }}', '{{ item.event.transport_lines or '' }}', {{ 'true' if item.user_joined else 'false' }}, {{ 'true' if item.is_organizer else 'false' }})"
-                     data-event-id="{{ item.event.id }}">
+                     data-event-id="{{ item.event.id }}"
+                     data-sport="{{ item.event.sport }}">
 
                     <!-- En-tête -->
                     <div class="activity-card-header">
                         <span class="activity-sport">{{ item.event.sport }}</span>
-                        <span class="badge {% if item.event.niveau == 'Débutant' %}niveau-debutant{% elif item.event.niveau == 'Intermédiaire' %}niveau-intermediaire{% else %}niveau-expert{% endif %}">
-                            {{ item.event.niveau }}
-                        </span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge {% if item.event.niveau == 'Débutant' %}niveau-debutant{% elif item.event.niveau == 'Intermédiaire' %}niveau-intermediaire{% else %}niveau-expert{% endif %}">
+                                {{ item.event.niveau }}
+                            </span>
+                            <button type="button"
+                                    class="card-heart-btn"
+                                    id="heart-{{ item.event.id }}"
+                                    onclick="event.stopPropagation(); toggleCardFavorite('{{ item.event.sport }}')"
+                                    title="Ajouter aux favoris">
+                                &#9825;
+                            </button>
+                        </div>
                     </div>
                     {% if item.user_joined or item.is_organizer %}
                     <span class="chat-notification-icon" id="notif-{{ item.event.id }}">
@@ -702,5 +713,52 @@ document.addEventListener('DOMContentLoaded', function() {
 function testNotification(eventId) {
     updateNotificationBadge(eventId, 3);
 }
+
+// ===========================
+// CŒURS FAVORIS — clé partagée avec le coach
+// ===========================
+const FAV_KEY = 'favoriteSports_{{ current_user.id }}';
+let favoriteSports = JSON.parse(localStorage.getItem(FAV_KEY) || '[]');
+
+function toggleCardFavorite(sportName) {
+    const idx = favoriteSports.indexOf(sportName);
+    if (idx >= 0) {
+        favoriteSports.splice(idx, 1);
+    } else {
+        favoriteSports.unshift(sportName);
+    }
+    localStorage.setItem(FAV_KEY, JSON.stringify(favoriteSports));
+    refreshAllHearts();
+    reorderCards();
+}
+
+function refreshAllHearts() {
+    document.querySelectorAll('.activity-card').forEach(card => {
+        const sport = card.dataset.sport;
+        const btn = card.querySelector('.card-heart-btn');
+        if (!btn) return;
+        const isFav = favoriteSports.includes(sport);
+        btn.innerHTML = isFav ? '&#9829;' : '&#9825;';
+        btn.classList.toggle('heart-active', isFav);
+    });
+}
+
+function reorderCards() {
+    const grid = document.querySelector('.activities-grid');
+    if (!grid) return;
+    const cards = Array.from(grid.querySelectorAll('.activity-card'));
+    const favCards = cards.filter(c => favoriteSports.includes(c.dataset.sport));
+    const otherCards = cards.filter(c => !favoriteSports.includes(c.dataset.sport));
+    favCards.sort((a, b) =>
+        favoriteSports.indexOf(a.dataset.sport) -
+        favoriteSports.indexOf(b.dataset.sport)
+    );
+    [...favCards, ...otherCards].forEach(card => grid.appendChild(card));
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    refreshAllHearts();
+    reorderCards();
+});
 </script>
 {% endblock %}
