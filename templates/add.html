@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Proposer une activité - Sport Connect{% endblock %}
+{% block title %}Proposer une activité - Olympus{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -21,13 +21,9 @@
                         <label for="sport" class="form-label">Sport proposé *</label>
                         <select name="sport" id="sport" class="form-select" required>
                             <option value="">Choisissez un sport...</option>
-                            <option value="Running">Running</option>
-                            <option value="Tennis">Tennis</option>
-                            <option value="Yoga">Yoga</option>
-                            <option value="Football">Football</option>
-                            <option value="Natation">Natation</option>
-                            <option value="Basketball">Basketball</option>
-                            <option value="Cyclisme">Cyclisme</option>
+                            {% for sport in sports_list %}
+                            <option value="{{ sport }}">{{ sport }}</option>
+                            {% endfor %}
                         </select>
                     </div>
 

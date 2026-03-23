@@ -1,5 +1,5 @@
 /**
- * Sport Connect - Fonctions JavaScript
+ * Olympus - Fonctions JavaScript
  * Gestion des interactions AJAX pour les événements
  */
 
@@ -193,7 +193,7 @@ function resetFilters() {
 
 // Initialisation au chargement de la page
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Sport Connect loaded');
+    console.log('Olympus loaded');
 
     // Auto-dismiss des alertes après 5 secondes
     const alerts = document.querySelectorAll('.alert:not(.alert-dismissible)');

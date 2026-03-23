@@ -5,6 +5,9 @@ Contient la classe User et les fonctions utilitaires
 
 from flask_login import UserMixin
 import sqlite3
+import os
+
+DATABASE_PATH = os.environ.get('DATABASE_PATH', 'database.db')
 
 
 class User(UserMixin):
@@ -115,7 +118,7 @@ def get_user_by_id(user_id):
     Returns:
         User: Instance de User ou None si non trouvé
     """
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute("SELECT * FROM users WHERE id = ?", (user_id,))
@@ -144,7 +147,7 @@ def get_user_by_username(username):
     Returns:
         dict: Données de l'utilisateur ou None si non trouvé
     """
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute("SELECT * FROM users WHERE username = ?", (username,))
@@ -169,7 +172,7 @@ def create_user(username, password_hash, email=None, avatar_color='#6c757d'):
         None: Si erreur (username déjà existant)
     """
     try:
-        conn = sqlite3.connect('database.db')
+        conn = sqlite3.connect(DATABASE_PATH)
         c = conn.cursor()
         c.execute(
             "INSERT INTO users (username, password_hash, email, avatar_color) VALUES (?, ?, ?, ?)",
@@ -195,7 +198,7 @@ def update_user_points(user_id, points_change):
     Returns:
         int: Nouveau total de points
     """
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     c = conn.cursor()
 
     # Mise à jour avec MAX pour éviter les points négatifs
@@ -228,7 +231,7 @@ def get_all_places(active_only=True):
     Returns:
         list: Liste de dictionnaires représentant les lieux
     """
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
 
@@ -253,7 +256,7 @@ def get_place_by_id(place_id):
     Returns:
         dict: Données du lieu ou None si non trouvé
     """
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
 
@@ -285,7 +288,7 @@ def create_place(name, city, address=None, latitude=None, longitude=None,
     Returns:
         int: ID du nouveau lieu
     """
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     c = conn.cursor()
 
     c.execute("""
@@ -316,7 +319,7 @@ def update_place(place_id, name=None, city=None, address=None, latitude=None,
     Returns:
         bool: True si la mise à jour a réussi
     """
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     c = conn.cursor()
 
     # Construire la requête dynamiquement
@@ -383,7 +386,7 @@ def delete_place(place_id):
     Returns:
         bool: True si la suppression a réussi
     """
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     c = conn.cursor()
 
     # Désactiver plutôt que supprimer pour préserver les références
@@ -406,7 +409,7 @@ def toggle_place_active(place_id):
     Returns:
         bool: Nouveau statut is_active
     """
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DATABASE_PATH)
     c = conn.cursor()
 
     c.execute("UPDATE places SET is_active = NOT is_active WHERE id = ?", (place_id,))

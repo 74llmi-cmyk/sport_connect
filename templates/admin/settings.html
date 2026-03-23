@@ -1,0 +1,369 @@
+{% extends "base.html" %}
+
+{% block title %}Administration - Réglages{% endblock %}
+
+{% block content %}
+<style>
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.spin { display: inline-block; animation: spin 1s linear infinite; }
+</style>
+<div class="admin-header mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2>Réglages</h2>
+        <div>
+            <a href="{{ url_for('admin_sport_images') }}" class="btn btn-outline-secondary me-2">Images sports</a>
+            <a href="{{ url_for('admin_places') }}" class="btn btn-outline-secondary me-2">Lieux</a>
+            <a href="{{ url_for('admin_events') }}" class="btn btn-outline-secondary me-2">Activités</a>
+            <a href="{{ url_for('admin_users') }}" class="btn btn-outline-secondary">Utilisateurs</a>
+        </div>
+    </div>
+    <p class="text-muted">Configurez les paramètres de l'application.</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+
+        <!-- Logo Olympus -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-dark text-white d-flex align-items-center gap-2">
+                <span style="font-size: 24px;">🏛️</span>
+                <h5 class="mb-0">Logo Olympus</h5>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <!-- Aperçu actuel -->
+                    <div class="col-auto text-center">
+                        <p class="small text-muted mb-1">Logo actuel</p>
+                        <img src="{{ logo_url }}"
+                             alt="Logo actuel"
+                             id="logo-preview"
+                             class="rounded-circle border"
+                             style="height: 80px; width: 80px; object-fit: cover;">
+                    </div>
+                    <!-- Formulaire -->
+                    <div class="col">
+                        <form action="{{ url_for('admin_upload_logo') }}" method="post" enctype="multipart/form-data">
+                            <label class="form-label fw-bold">Changer le logo</label>
+                            <input type="file"
+                                   name="logo_file"
+                                   accept="image/*"
+                                   class="form-control mb-2"
+                                   onchange="previewLogo(this)">
+                            <small class="text-muted d-block mb-2">Formats acceptés : jpg, png, gif, webp</small>
+                            <button type="submit" class="btn btn-dark me-2">
+                                <i class="bi bi-upload"></i> Uploader
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% if current_logo != 'logo.png' %}
+                <form action="{{ url_for('admin_reset_logo') }}" method="post" class="mt-3">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm"
+                            onclick="return confirm('Revenir au logo par défaut ?')">
+                        <i class="bi bi-arrow-counterclockwise"></i> Réinitialiser le logo par défaut
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Inscriptions -->
+        <div class="card shadow mb-4">
+            <div class="card-header {% if registration_enabled %}bg-success{% else %}bg-danger{% endif %} text-white d-flex align-items-center gap-2">
+                <span style="font-size: 24px;">📝</span>
+                <h5 class="mb-0">Inscriptions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                    <div>
+                        <p class="mb-1">
+                            Statut actuel :
+                            {% if registration_enabled %}
+                                <span class="badge bg-success fs-6">Activées</span>
+                            {% else %}
+                                <span class="badge bg-danger fs-6">Désactivées</span>
+                            {% endif %}
+                        </p>
+                        <small class="text-muted">
+                            {% if registration_enabled %}
+                                Les nouveaux utilisateurs peuvent s'inscrire librement.
+                            {% else %}
+                                Aucun nouvel utilisateur ne peut s'inscrire.
+                            {% endif %}
+                        </small>
+                    </div>
+                    <form action="{{ url_for('admin_toggle_registration') }}" method="post">
+                        {% if registration_enabled %}
+                            <button type="submit" class="btn btn-danger"
+                                    onclick="return confirm('Désactiver les inscriptions ?')">
+                                <i class="bi bi-lock-fill"></i> Désactiver les inscriptions
+                            </button>
+                        {% else %}
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-unlock-fill"></i> Activer les inscriptions
+                            </button>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste blanche -->
+        <div class="card shadow mb-4">
+            <div class="card-header {% if whitelist_enabled %}bg-warning text-dark{% else %}bg-secondary text-white{% endif %} d-flex align-items-center gap-2">
+                <span style="font-size: 24px;">🛡️</span>
+                <h5 class="mb-0">Liste blanche (Whitelist)</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
+                    <div>
+                        <p class="mb-1">
+                            Statut :
+                            {% if whitelist_enabled %}
+                                <span class="badge bg-warning text-dark fs-6">Activée</span>
+                            {% else %}
+                                <span class="badge bg-secondary fs-6">Désactivée</span>
+                            {% endif %}
+                        </p>
+                        <small class="text-muted">
+                            {% if whitelist_enabled %}
+                                Seuls les utilisateurs listés ci-dessous peuvent se connecter (les admins sont toujours autorisés).
+                            {% else %}
+                                Tous les utilisateurs peuvent se connecter.
+                            {% endif %}
+                        </small>
+                    </div>
+                    <form action="{{ url_for('admin_toggle_whitelist') }}" method="post">
+                        {% if whitelist_enabled %}
+                            <button type="submit" class="btn btn-secondary"
+                                    onclick="return confirm('Désactiver la liste blanche ? Tous les utilisateurs pourront se connecter.')">
+                                <i class="bi bi-shield-slash"></i> Désactiver la whitelist
+                            </button>
+                        {% else %}
+                            <button type="submit" class="btn btn-warning"
+                                    onclick="return confirm('Activer la liste blanche ? Seuls les utilisateurs listés pourront se connecter.')">
+                                <i class="bi bi-shield-check"></i> Activer la whitelist
+                            </button>
+                        {% endif %}
+                    </form>
+                </div>
+
+                <hr>
+
+                <!-- Actions -->
+                <div class="d-flex gap-2 flex-wrap mb-3">
+                    <!-- Générer automatiquement -->
+                    <form action="{{ url_for('admin_whitelist_generate') }}" method="post">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-magic"></i> Générer un compte test
+                        </button>
+                    </form>
+                    <!-- Ajouter manuellement -->
+                    <button class="btn btn-outline-success" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#formAjoutManuel">
+                        <i class="bi bi-person-plus"></i> Ajouter manuellement
+                    </button>
+                </div>
+
+                <!-- Formulaire ajout manuel (collapse) -->
+                <div class="collapse mb-3" id="formAjoutManuel">
+                    <div class="card card-body border-success">
+                        <form action="{{ url_for('admin_whitelist_add') }}" method="post">
+                            <div class="row g-2 mb-2">
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold">Identifiant *</label>
+                                    <input type="text" name="username" class="form-control" placeholder="ex: testeur_marie" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold">Mot de passe * <span class="text-muted fw-normal">(min. 6 car.)</span></label>
+                                    <input type="text" name="password" class="form-control" placeholder="ex: Sport2024!" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold">Email <span class="text-muted fw-normal">(optionnel)</span></label>
+                                    <input type="email" name="email" class="form-control" placeholder="ex: marie@exemple.fr">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <i class="bi bi-plus-lg"></i> Ajouter
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Liste des comptes -->
+                {% if whitelist %}
+                    <p class="fw-bold mb-2">Comptes autorisés — <span class="text-muted fw-normal">{{ whitelist|length }} compte(s)</span></p>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Identifiant</th>
+                                    <th>Mot de passe</th>
+                                    <th>Email</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in whitelist %}
+                                <tr>
+                                    <td><strong>{{ entry.username }}</strong></td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="font-monospace" id="pwd-{{ loop.index }}" style="filter: blur(4px); user-select:none; transition: filter .2s;">
+                                                {{ entry.password if entry.password else '(non visible)' }}
+                                            </span>
+                                            <button class="btn btn-sm btn-outline-secondary" type="button"
+                                                    onclick="togglePwd('pwd-{{ loop.index }}', this)" title="Afficher/masquer">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td class="text-muted small">{{ entry.email if entry.email else '—' }}</td>
+                                    <td class="text-center">
+                                        <form action="{{ url_for('admin_whitelist_remove') }}" method="post">
+                                            <input type="hidden" name="username" value="{{ entry.username }}">
+                                            <button type="submit" class="btn btn-sm btn-danger"
+                                                    onclick="return confirm('Supprimer le compte « {{ entry.username }} » ?')">
+                                                <i class="bi bi-trash-fill"></i> Supprimer
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted fst-italic text-center mt-2">
+                        <i class="bi bi-info-circle me-1"></i>Aucun compte dans la liste blanche. Utilisez « Générer » pour créer rapidement un compte test.
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Chatbot Sporty -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white d-flex align-items-center gap-2">
+                <span style="font-size: 24px;">🤖</span>
+                <h5 class="mb-0">Chatbot Sporty - API Albert</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">
+                    Sporty utilise l'IA <strong>Albert</strong> (API du gouvernement français) pour répondre aux questions des utilisateurs.
+                    Renseignez votre clé API pour activer le chatbot.
+                </p>
+
+                <form method="post" action="{{ url_for('admin_settings') }}">
+                    <div class="mb-3">
+                        <label for="albert_api_key" class="form-label fw-bold">Clé API Albert</label>
+                        <div class="input-group">
+                            <input type="password"
+                                   name="albert_api_key"
+                                   id="albert_api_key"
+                                   class="form-control"
+                                   value="{{ albert_api_key }}"
+                                   placeholder="Collez votre clé API ici...">
+                            <button type="button" class="btn btn-outline-secondary" onclick="toggleApiKey()" title="Afficher/masquer">
+                                <i class="bi bi-eye" id="toggle-eye"></i>
+                            </button>
+                        </div>
+                        <small class="form-text text-muted">
+                            Obtenez votre clé sur <a href="https://albert.api.etalab.gouv.fr" target="_blank">albert.api.etalab.gouv.fr</a>
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">URL de l'API</label>
+                        <input type="text" class="form-control" value="https://albert.api.etalab.gouv.fr/v1" disabled>
+                        <small class="form-text text-muted">URL pré-configurée (non modifiable)</small>
+                    </div>
+
+                    <!-- Statut -->
+                    <div class="alert {% if albert_api_key %}alert-success{% else %}alert-warning{% endif %} d-flex align-items-center gap-2">
+                        {% if albert_api_key %}
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span>Clé API configurée - Sporty est <strong>actif</strong></span>
+                        {% else %}
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <span>Aucune clé API - Sporty est <strong>inactif</strong></span>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex gap-2 align-items-center flex-wrap">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Sauvegarder
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="testAlbert()">
+                            <i class="bi bi-wifi" id="albert-test-icon"></i> Tester la connexion
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Résultat du test -->
+                <div id="albert-test-result" class="mt-3" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function previewLogo(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById('logo-preview').src = e.target.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function testAlbert() {
+    const icon = document.getElementById('albert-test-icon');
+    const result = document.getElementById('albert-test-result');
+    icon.className = 'bi bi-arrow-repeat spin';
+    result.style.display = 'none';
+
+    fetch('{{ url_for("admin_test_albert") }}')
+        .then(r => r.json())
+        .then(data => {
+            icon.className = 'bi bi-wifi';
+            result.style.display = 'block';
+            result.innerHTML = `<div class="alert ${data.status === 'success' ? 'alert-success' : 'alert-danger'} d-flex align-items-center gap-2 mb-0">
+                <i class="bi bi-${data.status === 'success' ? 'check-circle-fill' : 'x-circle-fill'}"></i>
+                <span>${data.message}</span>
+            </div>`;
+        })
+        .catch(() => {
+            icon.className = 'bi bi-wifi';
+            result.style.display = 'block';
+            result.innerHTML = '<div class="alert alert-danger mb-0">Impossible de joindre le serveur.</div>';
+        });
+}
+
+function toggleApiKey() {
+    const input = document.getElementById('albert_api_key');
+    const icon = document.getElementById('toggle-eye');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+}
+
+function togglePwd(id, btn) {
+    const el = document.getElementById(id);
+    const icon = btn.querySelector('i');
+    if (el.style.filter === 'none' || el.style.filter === '') {
+        el.style.filter = 'blur(4px)';
+        el.style.userSelect = 'none';
+        icon.className = 'bi bi-eye';
+    } else {
+        el.style.filter = 'none';
+        el.style.userSelect = 'text';
+        icon.className = 'bi bi-eye-slash';
+    }
+}
+</script>
+{% endblock %}

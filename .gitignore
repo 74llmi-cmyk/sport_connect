@@ -4,6 +4,13 @@ venv/
 env/
 ENV/
 
+# Variables d'environnement (DONNÉES SENSIBLES)
+.env
+.env.local
+.env.*.local
+*.env
+!.env.example
+
 # Base de données locale
 *.db
 database.db

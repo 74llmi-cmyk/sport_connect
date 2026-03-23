@@ -1,18 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}Activités disponibles - Sport Connect{% endblock %}
+{% block title %}Activités disponibles - Olympus{% endblock %}
 
 {% block content %}
-<!-- Images par sport -->
-{% set sport_images = {
-    'Running': 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=400&h=200&fit=crop',
-    'Tennis': 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=400&h=200&fit=crop',
-    'Yoga': 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=200&fit=crop',
-    'Football': 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&h=200&fit=crop',
-    'Natation': 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=400&h=200&fit=crop',
-    'Basketball': 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400&h=200&fit=crop',
-    'Cyclisme': 'https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=400&h=200&fit=crop'
-} %}
 
 <!-- Layout principal à 2 colonnes -->
 <div class="main-layout">
@@ -72,14 +62,24 @@
                 {% for item in events %}
                 <div class="activity-card {% if item.user_joined %}event-joined{% endif %}"
                      onclick="selectActivity({{ item.event.id }}, '{{ item.event.sport }}', '{{ item.event.lieu }}', '{{ item.event.date_heure }}', '{{ item.organizer_name }}', {{ item.event.latitude or 'null' }}, {{ item.event.longitude or 'null' }}, '{{ item.event.accessibilite or '' }}', {{ item.participant_count }}, '{{ item.event.transport_station or '' }}', '{{ item.event.transport_lines or '' }}', {{ 'true' if item.user_joined else 'false' }}, {{ 'true' if item.is_organizer else 'false' }})"
-                     data-event-id="{{ item.event.id }}">
+                     data-event-id="{{ item.event.id }}"
+                     data-sport="{{ item.event.sport }}">
 
                     <!-- En-tête -->
                     <div class="activity-card-header">
                         <span class="activity-sport">{{ item.event.sport }}</span>
-                        <span class="badge {% if item.event.niveau == 'Débutant' %}niveau-debutant{% elif item.event.niveau == 'Intermédiaire' %}niveau-intermediaire{% else %}niveau-expert{% endif %}">
-                            {{ item.event.niveau }}
-                        </span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge {% if item.event.niveau == 'Débutant' %}niveau-debutant{% elif item.event.niveau == 'Intermédiaire' %}niveau-intermediaire{% else %}niveau-expert{% endif %}">
+                                {{ item.event.niveau }}
+                            </span>
+                            <button type="button"
+                                    class="card-heart-btn"
+                                    id="heart-{{ item.event.id }}"
+                                    onclick="event.stopPropagation(); toggleCardFavorite('{{ item.event.sport }}')"
+                                    title="Ajouter aux favoris">
+                                &#9825;
+                            </button>
+                        </div>
                     </div>
                     {% if item.user_joined or item.is_organizer %}
                     <span class="chat-notification-icon" id="notif-{{ item.event.id }}">
@@ -623,10 +623,38 @@ function resetNotifications(eventId) {
 
 // Initialiser la carte et les notifications
 document.addEventListener('DOMContentLoaded', function() {
-    // Sélectionner automatiquement la première activité géolocalisée
-    const firstGeoCard = document.querySelector('.activity-card[data-event-id]');
-    if (firstGeoCard) {
-        firstGeoCard.click();
+    // Vérifier si on arrive depuis le calendrier avec un highlight
+    const urlParams = new URLSearchParams(window.location.search);
+    const highlightId = urlParams.get('highlight');
+
+    if (highlightId) {
+        const targetCard = document.querySelector(`.activity-card[data-event-id="${highlightId}"]`);
+        if (targetCard) {
+            // Scroll vers la carte avec animation
+            targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Animation de mise en surbrillance
+            targetCard.classList.add('highlight-from-calendar');
+            // Cliquer pour sélectionner (met à jour le sidepanel)
+            targetCard.click();
+            // Retirer l'animation après 3s
+            setTimeout(function() {
+                targetCard.classList.remove('highlight-from-calendar');
+            }, 3000);
+            // Nettoyer l'URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } else {
+            // Événement non trouvé, comportement par défaut
+            const firstGeoCard = document.querySelector('.activity-card[data-event-id]');
+            if (firstGeoCard) {
+                firstGeoCard.click();
+            }
+        }
+    } else {
+        // Comportement par défaut : sélectionner la première activité
+        const firstGeoCard = document.querySelector('.activity-card[data-event-id]');
+        if (firstGeoCard) {
+            firstGeoCard.click();
+        }
     }
 
     // Démarrer le polling des notifications pour les événements rejoints
@@ -661,5 +689,52 @@ document.addEventListener('DOMContentLoaded', function() {
 function testNotification(eventId) {
     updateNotificationBadge(eventId, 3);
 }
+
+// ===========================
+// CŒURS FAVORIS — clé partagée avec le coach
+// ===========================
+const FAV_KEY = 'favoriteSports_{{ current_user.id }}';
+let favoriteSports = JSON.parse(localStorage.getItem(FAV_KEY) || '[]');
+
+function toggleCardFavorite(sportName) {
+    const idx = favoriteSports.indexOf(sportName);
+    if (idx >= 0) {
+        favoriteSports.splice(idx, 1);
+    } else {
+        favoriteSports.unshift(sportName);
+    }
+    localStorage.setItem(FAV_KEY, JSON.stringify(favoriteSports));
+    refreshAllHearts();
+    reorderCards();
+}
+
+function refreshAllHearts() {
+    document.querySelectorAll('.activity-card').forEach(card => {
+        const sport = card.dataset.sport;
+        const btn = card.querySelector('.card-heart-btn');
+        if (!btn) return;
+        const isFav = favoriteSports.includes(sport);
+        btn.innerHTML = isFav ? '&#9829;' : '&#9825;';
+        btn.classList.toggle('heart-active', isFav);
+    });
+}
+
+function reorderCards() {
+    const grid = document.querySelector('.activities-grid');
+    if (!grid) return;
+    const cards = Array.from(grid.querySelectorAll('.activity-card'));
+    const favCards = cards.filter(c => favoriteSports.includes(c.dataset.sport));
+    const otherCards = cards.filter(c => !favoriteSports.includes(c.dataset.sport));
+    favCards.sort((a, b) =>
+        favoriteSports.indexOf(a.dataset.sport) -
+        favoriteSports.indexOf(b.dataset.sport)
+    );
+    [...favCards, ...otherCards].forEach(card => grid.appendChild(card));
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    refreshAllHearts();
+    reorderCards();
+});
 </script>
 {% endblock %}

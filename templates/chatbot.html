@@ -1,0 +1,486 @@
+{% extends "base.html" %}
+
+{% block title %}Sporty - Coach Sportif IA{% endblock %}
+
+{% block content %}
+<div class="coach-page">
+
+    <!-- ÉTAPE 1 : Sélection du sport -->
+    <div id="coach-step-pick">
+        <div class="text-center mb-4">
+            <h2>🏋️ Sporty — Coach IA</h2>
+            <p class="text-muted">Choisis ton sport pour un conseil personnalisé, ou discute librement avec Sporty</p>
+        </div>
+
+        <div class="text-center mb-3">
+            <button class="btn btn-primary" onclick="selectSport(null, '🏋️', '#667eea')">
+                <i class="bi bi-chat-dots"></i> Discuter librement avec Sporty
+            </button>
+        </div>
+
+        <div class="coach-sport-grid" id="coach-sport-grid">
+            {% for sport in sports_data %}
+            <div class="coach-sport-wrapper" data-sport="{{ sport.name }}">
+                <button class="coach-sport-btn" onclick="selectSport('{{ sport.name }}', '{{ sport.emoji }}', '{{ sport.color }}')"
+                        style="--sport-color: {{ sport.color }};">
+                    <span class="coach-sport-emoji">{{ sport.emoji }}</span>
+                    <span class="coach-sport-name">{{ sport.name }}</span>
+                </button>
+                <button type="button"
+                        class="coach-heart-btn"
+                        id="coach-heart-{{ sport.name | replace(' ', '-') }}"
+                        onclick="toggleCoachFavorite('{{ sport.name }}')"
+                        title="Ajouter aux favoris">
+                    &#9825;
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ÉTAPE 2 : Chat -->
+    <div id="coach-step-chat" style="display:none;">
+        <div class="coach-chat-container">
+
+            <!-- En-tête -->
+            <div class="coach-chat-header" id="coach-header">
+                <button class="btn btn-sm btn-outline-light me-2" onclick="backToPicker()" title="Changer de sport">
+                    <i class="bi bi-arrow-left"></i>
+                </button>
+                <span class="coach-chat-header-emoji" id="coach-header-emoji">🏋️</span>
+                <div>
+                    <h5 class="mb-0" id="coach-header-title">Sporty</h5>
+                    <small style="opacity:0.8;">Coach sportif IA</small>
+                </div>
+                <div class="ms-auto d-flex gap-2">
+                    <!-- Auto-speak -->
+                    <button id="btn-auto-speak" class="btn btn-sm btn-outline-light" onclick="toggleAutoSpeak()" title="Lecture vocale automatique">
+                        <i class="bi bi-volume-mute" id="auto-speak-icon"></i>
+                    </button>
+                    <!-- Effacer -->
+                    <button class="btn btn-sm btn-outline-light" onclick="clearCoach()" title="Effacer la conversation">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div class="coach-chat-messages" id="coach-messages"></div>
+
+            <!-- Typing -->
+            <div class="coach-chat-typing" id="coach-typing" style="display:none;">
+                <div class="chat-avatar" id="coach-typing-avatar" style="width:32px;height:32px;font-size:18px;">🏅</div>
+                <div class="typing-indicator"><span></span><span></span><span></span></div>
+            </div>
+
+            <!-- Suggestions rapides -->
+            <div class="coach-suggestions" id="coach-suggestions">
+                <button class="coach-suggestion-btn" id="sug-programme" onclick="sendQuick('Donne-moi un programme d\'entraînement pour débutant')">Programme débutant</button>
+                <button class="coach-suggestion-btn" id="sug-horaires" onclick="sendQuick('Quels sont les meilleurs horaires pour pratiquer ?')">Meilleurs horaires</button>
+                <button class="coach-suggestion-btn" id="sug-exercices" onclick="sendQuick('Quels exercices pour progresser ?')">Exercices</button>
+            </div>
+
+            <!-- Zone de saisie -->
+            <div class="coach-chat-input-area">
+                <!-- Micro -->
+                <button id="btn-mic" class="btn-mic" onclick="toggleVoiceInput()" title="Commande vocale">
+                    <i class="bi bi-mic" id="mic-icon"></i>
+                </button>
+                <input type="text" id="coach-input" class="coach-chat-input"
+                       placeholder="Pose ta question à Sporty..."
+                       autocomplete="off"
+                       onkeydown="if(event.key==='Enter')sendCoachMessage()">
+                <button class="coach-chat-send" onclick="sendCoachMessage()" id="coach-send-btn">
+                    <i class="bi bi-send-fill"></i>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+let currentSport = null;
+let currentEmoji = '🏋️';
+let currentColor = '#667eea';
+let coachHistory = [];
+let autoSpeak = false;
+let isRecording = false;
+let recognition = null;
+
+// ===========================
+// SÉLECTION DU SPORT
+// ===========================
+
+function selectSport(name, emoji, color) {
+    currentSport = name;
+    currentEmoji = emoji || '🏋️';
+    currentColor = color || '#667eea';
+    coachHistory = [];
+
+    // Afficher l'interface de chat
+    document.getElementById('coach-step-pick').style.display = 'none';
+    document.getElementById('coach-step-chat').style.display = 'block';
+
+    // Configurer le header avec la couleur du sport
+    const headerGrad = `linear-gradient(135deg, ${currentColor} 0%, ${shadeColor(currentColor, -40)} 100%)`;
+    document.getElementById('coach-header').style.background = headerGrad;
+    document.getElementById('coach-header-emoji').textContent = currentEmoji;
+    document.getElementById('coach-header-title').textContent = name ? `Coach ${name}` : 'Sporty';
+    document.getElementById('coach-send-btn').style.background = headerGrad;
+    document.getElementById('coach-typing-avatar').style.background = currentColor;
+    document.getElementById('coach-typing-avatar').textContent = currentEmoji;
+
+    // Message de bienvenue
+    const sportCtx = name
+        ? `${currentEmoji} Salut <strong>{{ current_user.username }}</strong> ! Je suis <strong>Sporty</strong>, ton coach <strong>${name}</strong> !<br>Que puis-je faire pour toi ?`
+        : `🏋️ Salut <strong>{{ current_user.username }}</strong> ! Je suis <strong>Sporty</strong>, ton coach sportif IA !<br>Parle-moi de ton sport, de tes objectifs ou de tes envies 💪`;
+
+    document.getElementById('coach-messages').innerHTML = `
+        <div class="chat-message bot-message">
+            <div class="chat-avatar" style="width:36px;height:36px;font-size:20px;background:${currentColor};">${currentEmoji}</div>
+            <div class="chat-bubble bot-bubble">
+                <p>${sportCtx}</p>
+                <button class="btn-speak" onclick="speakText(this.parentElement.innerText)" title="Écouter">
+                    <i class="bi bi-volume-up"></i>
+                </button>
+            </div>
+        </div>`;
+
+    // Initialiser l'historique (contexte pour l'IA)
+    if (name) {
+        coachHistory.push({
+            role: 'user',
+            content: `Tu es un coach sportif expert en ${name}. L'utilisateur veut des conseils sur le ${name} : entraînement, exercices, meilleurs créneaux horaires pour pratiquer, échauffements, nutrition adaptée. Réponds toujours dans le contexte du ${name}. Sois motivant, chaleureux et précis.`
+        });
+        coachHistory.push({
+            role: 'assistant',
+            content: `Je suis ton coach personnel en ${name} ! Pose-moi toutes tes questions.`
+        });
+    }
+
+    // Mettre à jour les suggestions rapides selon le sport
+    updateSuggestions(name);
+
+    document.getElementById('coach-suggestions').style.display = 'flex';
+    setTimeout(() => document.getElementById('coach-input').focus(), 200);
+}
+
+function updateSuggestions(sport) {
+    if (sport) {
+        document.getElementById('sug-programme').onclick = () => sendQuick(`Donne-moi un programme d'entraînement ${sport} pour débutant`);
+        document.getElementById('sug-horaires').onclick  = () => sendQuick(`Quels sont les meilleurs horaires pour pratiquer le ${sport} ?`);
+        document.getElementById('sug-exercices').onclick = () => sendQuick(`Quels exercices pour progresser en ${sport} ?`);
+    } else {
+        document.getElementById('sug-programme').onclick = () => sendQuick("Je cherche un sport à pratiquer, que me conseilles-tu ?");
+        document.getElementById('sug-horaires').onclick  = () => sendQuick("Quelles activités sportives sont disponibles près de chez moi ?");
+        document.getElementById('sug-exercices').onclick = () => sendQuick("Comment débuter le sport quand on est débutant ?");
+        document.getElementById('sug-programme').textContent = "Quel sport commencer ?";
+        document.getElementById('sug-horaires').textContent  = "Activités disponibles";
+        document.getElementById('sug-exercices').textContent  = "Conseils débutant";
+    }
+}
+
+function backToPicker() {
+    document.getElementById('coach-step-chat').style.display = 'none';
+    document.getElementById('coach-step-pick').style.display = 'block';
+    if (isRecording) stopVoiceInput();
+}
+
+// ===========================
+// ENVOI DE MESSAGES
+// ===========================
+
+function sendQuick(text) {
+    document.getElementById('coach-input').value = text;
+    sendCoachMessage();
+    document.getElementById('coach-suggestions').style.display = 'none';
+}
+
+function sendCoachMessage() {
+    const input = document.getElementById('coach-input');
+    const message = input.value.trim();
+    if (!message) return;
+
+    addMessage(message, 'user');
+    input.value = '';
+    coachHistory.push({ role: 'user', content: message });
+
+    document.getElementById('coach-suggestions').style.display = 'none';
+    document.getElementById('coach-typing').style.display = 'flex';
+    scrollMessages();
+
+    const payload = {
+        message: currentSport ? `[Coach ${currentSport}] ${message}` : message,
+        history: coachHistory
+    };
+
+    fetch('/api/chatbot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('coach-typing').style.display = 'none';
+        const response = data.response || data.error || "Erreur de connexion";
+        addMessage(response, 'bot', data.suggested_events || []);
+        coachHistory.push({ role: 'assistant', content: response });
+        if (autoSpeak) speakText(response);
+    })
+    .catch(() => {
+        document.getElementById('coach-typing').style.display = 'none';
+        addMessage("Oups, problème de connexion ! Réessaie.", 'bot', []);
+    });
+}
+
+// ===========================
+// AFFICHAGE DES MESSAGES
+// ===========================
+
+function escapeHtml(text) {
+    const d = document.createElement('div');
+    d.textContent = text;
+    return d.innerHTML;
+}
+
+function formatMessage(text) {
+    let f = escapeHtml(text);
+    f = f.replace(/\n/g, '<br>');
+    f = f.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    return f;
+}
+
+function addMessage(text, sender, suggestedEvents) {
+    const container = document.getElementById('coach-messages');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `chat-message ${sender}-message`;
+
+    if (sender === 'bot') {
+        let eventsHtml = '';
+        if (suggestedEvents && suggestedEvents.length > 0) {
+            const cards = suggestedEvents.map(ev => `
+                <div class="sporty-event-card">
+                    <div class="sporty-event-info">
+                        <strong>${escapeHtml(ev.sport)}</strong>
+                        <span class="sporty-event-niveau">${escapeHtml(ev.niveau)}</span><br>
+                        <small><i class="bi bi-geo-alt"></i> ${escapeHtml(ev.lieu)}</small><br>
+                        <small><i class="bi bi-clock"></i> ${escapeHtml(ev.date_heure)}</small><br>
+                        <small><i class="bi bi-person"></i> ${escapeHtml(ev.organisateur)}</small>
+                    </div>
+                    <a href="/?highlight=${ev.id}" class="sporty-event-btn">
+                        S'inscrire <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            `).join('');
+            eventsHtml = `<div class="sporty-events-suggestions">${cards}</div>`;
+        }
+
+        msgDiv.innerHTML = `
+            <div class="chat-avatar" style="width:36px;height:36px;font-size:20px;background:${currentColor};">${currentEmoji}</div>
+            <div class="chat-bubble bot-bubble">
+                <p>${formatMessage(text)}</p>
+                ${eventsHtml}
+                <button class="btn-speak" onclick="speakText(this.parentElement.innerText)" title="Écouter">
+                    <i class="bi bi-volume-up"></i>
+                </button>
+            </div>`;
+    } else {
+        msgDiv.innerHTML = `
+            <div class="chat-bubble user-bubble"><p>${escapeHtml(text)}</p></div>
+            <div class="chat-avatar user-avatar" style="width:36px;height:36px;font-size:13px;">{{ current_user.get_initials() }}</div>`;
+    }
+
+    container.appendChild(msgDiv);
+    scrollMessages();
+}
+
+function scrollMessages() {
+    setTimeout(() => {
+        const el = document.getElementById('coach-messages');
+        el.scrollTop = el.scrollHeight;
+    }, 50);
+}
+
+function clearCoach() {
+    if (!confirm('Effacer toute la conversation ?')) return;
+    coachHistory = [];
+    if (currentSport) {
+        coachHistory.push({
+            role: 'user',
+            content: `Tu es un coach sportif expert en ${currentSport}. Réponds dans le contexte du ${currentSport}.`
+        });
+        coachHistory.push({
+            role: 'assistant',
+            content: `Je suis ton coach en ${currentSport} ! Pose-moi tes questions.`
+        });
+    }
+    document.getElementById('coach-messages').innerHTML = `
+        <div class="chat-message bot-message">
+            <div class="chat-avatar" style="width:36px;height:36px;font-size:20px;background:${currentColor};">${currentEmoji}</div>
+            <div class="chat-bubble bot-bubble">
+                <p>Conversation effacée ! On repart de zéro ${currentEmoji} 💪</p>
+                <button class="btn-speak" onclick="speakText(this.parentElement.innerText)" title="Écouter">
+                    <i class="bi bi-volume-up"></i>
+                </button>
+            </div>
+        </div>`;
+    document.getElementById('coach-suggestions').style.display = 'flex';
+}
+
+// ===========================
+// COMMANDE VOCALE (Entrée)
+// ===========================
+
+function toggleVoiceInput() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert("La reconnaissance vocale n'est pas supportée par ton navigateur. Utilise Chrome !");
+        return;
+    }
+    if (isRecording) {
+        stopVoiceInput();
+    } else {
+        startVoiceInput();
+    }
+}
+
+function startVoiceInput() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.lang = 'fr-FR';
+    recognition.continuous = false;
+    recognition.interimResults = true;
+
+    recognition.onstart = () => {
+        isRecording = true;
+        document.getElementById('btn-mic').classList.add('recording');
+        document.getElementById('mic-icon').className = 'bi bi-mic-fill';
+        document.getElementById('coach-input').placeholder = "🎙️ Je t'écoute...";
+    };
+
+    recognition.onresult = (event) => {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
+        }
+        document.getElementById('coach-input').value = transcript;
+        if (event.results[event.results.length - 1].isFinal) {
+            setTimeout(() => sendCoachMessage(), 300);
+        }
+    };
+
+    recognition.onerror = (event) => {
+        stopVoiceInput();
+        if (event.error === 'not-allowed') {
+            alert("Autorise l'accès au micro dans ton navigateur !");
+        }
+    };
+
+    recognition.onend = () => stopVoiceInput();
+
+    recognition.start();
+}
+
+function stopVoiceInput() {
+    isRecording = false;
+    document.getElementById('btn-mic').classList.remove('recording');
+    document.getElementById('mic-icon').className = 'bi bi-mic';
+    document.getElementById('coach-input').placeholder = "Pose ta question à Sporty...";
+    if (recognition) recognition.stop();
+}
+
+// ===========================
+// LECTURE VOCALE (Sortie)
+// ===========================
+
+function speakText(text) {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'fr-FR';
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    const voices = window.speechSynthesis.getVoices();
+    const frenchVoice = voices.find(v => v.lang.startsWith('fr'));
+    if (frenchVoice) utterance.voice = frenchVoice;
+    window.speechSynthesis.speak(utterance);
+}
+
+function toggleAutoSpeak() {
+    autoSpeak = !autoSpeak;
+    const icon = document.getElementById('auto-speak-icon');
+    const btn = document.getElementById('btn-auto-speak');
+    if (autoSpeak) {
+        icon.className = 'bi bi-volume-up-fill';
+        btn.classList.add('active');
+        btn.title = 'Lecture vocale auto : ON';
+    } else {
+        icon.className = 'bi bi-volume-mute';
+        btn.classList.remove('active');
+        btn.title = 'Lecture vocale auto : OFF';
+    }
+}
+
+// ===========================
+// UTILITAIRES
+// ===========================
+
+function shadeColor(color, percent) {
+    let num = parseInt(color.replace('#',''), 16);
+    let r = Math.min(255, Math.max(0, (num >> 16) + percent));
+    let g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + percent));
+    let b = Math.min(255, Math.max(0, (num & 0x0000FF) + percent));
+    return '#' + (0x1000000 + r * 0x10000 + g * 0x100 + b).toString(16).slice(1);
+}
+
+// Charger les voix disponibles
+if (window.speechSynthesis) {
+    window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
+}
+
+// ===========================
+// CŒURS FAVORIS SPORTS COACH
+// ===========================
+// clé partagée avec le menu activités
+const FAV_KEY = 'favoriteSports_{{ current_user.id }}';
+let favoriteSports = JSON.parse(localStorage.getItem(FAV_KEY) || '[]');
+
+function toggleCoachFavorite(sportName) {
+    const safeId = sportName.replace(/ /g, '-');
+    const btn = document.getElementById('coach-heart-' + safeId);
+    const idx = favoriteSports.indexOf(sportName);
+    if (idx >= 0) {
+        favoriteSports.splice(idx, 1);
+        btn.innerHTML = '&#9825;';
+        btn.classList.remove('heart-active');
+    } else {
+        favoriteSports.unshift(sportName);
+        btn.innerHTML = '&#9829;';
+        btn.classList.add('heart-active');
+    }
+    localStorage.setItem(FAV_KEY, JSON.stringify(favoriteSports));
+    reorderCoachGrid();
+}
+
+function reorderCoachGrid() {
+    const grid = document.getElementById('coach-sport-grid');
+    if (!grid) return;
+    const wrappers = Array.from(grid.querySelectorAll('.coach-sport-wrapper'));
+    const favs = wrappers.filter(w => favoriteSports.includes(w.dataset.sport));
+    const others = wrappers.filter(w => !favoriteSports.includes(w.dataset.sport));
+    favs.sort((a, b) =>
+        favoriteSports.indexOf(a.dataset.sport) -
+        favoriteSports.indexOf(b.dataset.sport)
+    );
+    [...favs, ...others].forEach(w => grid.appendChild(w));
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    favoriteSports.forEach(name => {
+        const btn = document.getElementById('coach-heart-' + name.replace(/ /g, '-'));
+        if (btn) { btn.innerHTML = '&#9829;'; btn.classList.add('heart-active'); }
+    });
+    reorderCoachGrid();
+});
+</script>
+{% endblock %}
