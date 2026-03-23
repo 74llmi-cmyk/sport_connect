@@ -1628,6 +1628,31 @@ def admin_toggle_admin(user_id):
     return redirect(url_for('admin_users'))
 
 
+def delete_user_completely(user_id):
+    """Supprime un utilisateur et toutes ses données associées"""
+    conn = sqlite3.connect(DATABASE_PATH)
+    c = conn.cursor()
+    # Récupérer les événements organisés par cet utilisateur
+    c.execute("SELECT id FROM events WHERE organizer_id = ?", (user_id,))
+    event_ids = [row[0] for row in c.fetchall()]
+    # Supprimer les messages de ces événements
+    for eid in event_ids:
+        c.execute("DELETE FROM messages WHERE event_id = ?", (eid,))
+    # Supprimer les participations à ces événements
+    for eid in event_ids:
+        c.execute("DELETE FROM participations WHERE event_id = ?", (eid,))
+    # Supprimer les événements organisés
+    c.execute("DELETE FROM events WHERE organizer_id = ?", (user_id,))
+    # Supprimer les participations de l'utilisateur
+    c.execute("DELETE FROM participations WHERE user_id = ?", (user_id,))
+    # Supprimer les messages postés par l'utilisateur
+    c.execute("DELETE FROM messages WHERE user_id = ?", (user_id,))
+    # Supprimer l'utilisateur
+    c.execute("DELETE FROM users WHERE id = ?", (user_id,))
+    conn.commit()
+    conn.close()
+
+
 @app.route('/admin/users/<int:user_id>/delete', methods=['POST'])
 @admin_required
 def admin_delete_user(user_id):
@@ -1639,31 +1664,19 @@ def admin_delete_user(user_id):
 
     conn = sqlite3.connect(DATABASE_PATH)
     c = conn.cursor()
+    c.execute("SELECT username, is_admin FROM users WHERE id = ?", (user_id,))
+    user = c.fetchone()
+    conn.close()
 
-    # Empêcher la suppression d'un compte administrateur
-    c.execute("SELECT is_admin FROM users WHERE id = ?", (user_id,))
-    target = c.fetchone()
-    if target and target[0]:
-        conn.close()
+    if not user:
+        flash('Utilisateur introuvable.', 'error')
+        return redirect(url_for('admin_users'))
+    if user[1]:
         flash('Impossible de supprimer un compte administrateur.', 'error')
         return redirect(url_for('admin_users'))
 
-    c.execute("SELECT username FROM users WHERE id = ?", (user_id,))
-    user = c.fetchone()
-
-    if user:
-        # Supprimer les participations
-        c.execute("DELETE FROM participations WHERE user_id = ?", (user_id,))
-        # Annuler les événements organisés (plutôt que supprimer)
-        c.execute("UPDATE events SET is_cancelled = 1 WHERE organizer_id = ?", (user_id,))
-        # Supprimer l'utilisateur
-        c.execute("DELETE FROM users WHERE id = ?", (user_id,))
-        conn.commit()
-        flash(f'Utilisateur "{user[0]}" supprimé.', 'success')
-    else:
-        flash('Utilisateur introuvable.', 'error')
-
-    conn.close()
+    delete_user_completely(user_id)
+    flash(f'Utilisateur "{user[0]}" et toutes ses données supprimés.', 'success')
     return redirect(url_for('admin_users'))
 
 
@@ -1875,13 +1888,7 @@ def admin_whitelist_remove():
         # Supprimer aussi le compte utilisateur en base (sauf admin)
         user_data = get_user_by_username(username)
         if user_data and not user_data.get('is_admin'):
-            conn = sqlite3.connect(DATABASE_PATH)
-            c = conn.cursor()
-            c.execute("DELETE FROM participations WHERE user_id = ?", (user_data['id'],))
-            c.execute("UPDATE events SET is_cancelled = 1 WHERE organizer_id = ?", (user_data['id'],))
-            c.execute("DELETE FROM users WHERE id = ?", (user_data['id'],))
-            conn.commit()
-            conn.close()
+            delete_user_completely(user_data['id'])
         flash(f'« {username} » supprimé de la liste blanche et des utilisateurs.', 'success')
     return redirect(url_for('admin_settings'))
 
