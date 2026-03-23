@@ -1821,7 +1821,14 @@ def admin_whitelist_add():
         entry['email'] = email
     whitelist.append(entry)
     set_setting('whitelist', json.dumps(whitelist))
-    flash(f'« {username} » ajouté à la liste blanche.', 'success')
+
+    # Créer le compte utilisateur en base s'il n'existe pas déjà
+    if not get_user_by_username(username):
+        colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
+                  '#F06292', '#64B5F6', '#81C784', '#FFB74D', '#BA68C8']
+        create_user(username, entry['password_hash'], email, random.choice(colors))
+
+    flash(f'« {username} » ajouté à la liste blanche et créé dans les utilisateurs.', 'success')
     return redirect(url_for('admin_settings'))
 
 
@@ -1841,27 +1848,41 @@ def admin_whitelist_generate():
     if any(e.get('username') == username for e in whitelist):
         username += str(random.randint(1, 9))
 
-    entry = {
-        'username': username,
-        'password': password,
-        'password_hash': generate_password_hash(password)
-    }
+    password_hash = generate_password_hash(password)
+    entry = {'username': username, 'password': password, 'password_hash': password_hash}
     whitelist.append(entry)
     set_setting('whitelist', json.dumps(whitelist))
-    flash(f'Compte « {username} » généré avec succès.', 'success')
+
+    # Créer le compte utilisateur en base
+    if not get_user_by_username(username):
+        colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
+                  '#F06292', '#64B5F6', '#81C784', '#FFB74D', '#BA68C8']
+        create_user(username, password_hash, None, random.choice(colors))
+
+    flash(f'Compte « {username} » généré — mot de passe : {password}', 'success')
     return redirect(url_for('admin_settings'))
 
 
 @app.route('/admin/settings/whitelist/remove', methods=['POST'])
 @admin_required
 def admin_whitelist_remove():
-    """Retirer un compte de la liste blanche"""
+    """Retirer un compte de la liste blanche et supprimer l'utilisateur associé"""
     username = request.form.get('username', '').strip()
     whitelist = json.loads(get_setting('whitelist', '[]'))
     new_list = [e for e in whitelist if e.get('username') != username]
     if len(new_list) < len(whitelist):
         set_setting('whitelist', json.dumps(new_list))
-        flash(f'« {username} » supprimé de la liste blanche.', 'success')
+        # Supprimer aussi le compte utilisateur en base (sauf admin)
+        user_data = get_user_by_username(username)
+        if user_data and not user_data.get('is_admin'):
+            conn = sqlite3.connect(DATABASE_PATH)
+            c = conn.cursor()
+            c.execute("DELETE FROM participations WHERE user_id = ?", (user_data['id'],))
+            c.execute("UPDATE events SET is_cancelled = 1 WHERE organizer_id = ?", (user_data['id'],))
+            c.execute("DELETE FROM users WHERE id = ?", (user_data['id'],))
+            conn.commit()
+            conn.close()
+        flash(f'« {username} » supprimé de la liste blanche et des utilisateurs.', 'success')
     return redirect(url_for('admin_settings'))
 
 
