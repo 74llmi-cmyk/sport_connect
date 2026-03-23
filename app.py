@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from werkzeug.utils import secure_filename
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
@@ -7,6 +8,7 @@ import sqlite3
 import random
 import re
 import os
+import json
 import calendar as cal_module
 import requests
 from datetime import datetime, date
@@ -37,6 +39,13 @@ login_manager.login_message_category = 'info'
 def load_user(user_id):
     """Charge un utilisateur depuis la base de données par son ID"""
     return get_user_by_id(user_id)
+
+
+@app.context_processor
+def inject_logo():
+    """Injecte le logo dynamique dans tous les templates"""
+    logo_path = get_setting('logo_path', 'logo.png')
+    return {'logo_url': url_for('static', filename=logo_path)}
 
 
 def admin_required(f):
@@ -99,6 +108,70 @@ def set_setting(key, value):
 
 
 # ===========================
+# IMAGES DES SPORTS (défauts)
+# ===========================
+
+DEFAULT_SPORT_IMAGES = {
+    'Running':          'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=400&h=200&fit=crop',
+    'Tennis':           'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=400&h=200&fit=crop',
+    'Yoga':             'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=200&fit=crop',
+    'Football':         'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&h=200&fit=crop',
+    'Natation':         'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=400&h=200&fit=crop',
+    'Basketball':       'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400&h=200&fit=crop',
+    'Cyclisme':         'https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=400&h=200&fit=crop',
+    'Roller':           '/static/images/sports/roller.jpg',
+    'Volley-ball':      'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=400&h=200&fit=crop',
+    'Danse':            'https://images.unsplash.com/photo-1547153760-18fc86324498?w=400&h=200&fit=crop',
+    'Judo':             'https://images.unsplash.com/photo-1555597673-b21d5c935865?w=400&h=200&fit=crop',
+    'Karaté':           'https://images.unsplash.com/photo-1555597408-26bc8e548a46?w=400&h=200&fit=crop',
+    'Capoeira':         '/static/images/sports/capoeira.jpg',
+    'Ping-pong':        'https://images.unsplash.com/photo-1534158914592-062992fbe900?w=400&h=200&fit=crop',
+    'Patinage':         'https://images.unsplash.com/photo-1547483238991-18f79b7ccf8a?w=400&h=200&fit=crop',
+    'Taekwondo':        '/static/images/sports/taekwondo.jpg',
+    'Kendo':            'https://images.unsplash.com/photo-1509114397022-ed747cca3f65?w=400&h=200&fit=crop',
+    'Handball':         'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&h=200&fit=crop',
+    'Gymnastique':      'https://images.unsplash.com/photo-1566577739112-5180d4bf9390?w=400&h=200&fit=crop',
+    'Escrime':          '/static/images/sports/escrime.jpg',
+    'Ski':              'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400&h=200&fit=crop',
+    'Parkour':          '/static/images/sports/parkour.jpg',
+    'Hockey':           '/static/images/sports/hockey.jpg',
+    'Skate':            '/static/images/sports/skate.jpg',
+    'Voile':            '/static/images/sports/voile.jpg',
+    'Escalade':         'https://images.unsplash.com/photo-1522163182402-834f871fd851?w=400&h=200&fit=crop',
+    'Rugby':            'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?w=400&h=200&fit=crop',
+    'Badminton':        'https://images.unsplash.com/photo-1544298621-35a764e4c9d8?w=400&h=200&fit=crop',
+    'Boxe':             'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?w=400&h=200&fit=crop',
+    'MMA':              'https://images.unsplash.com/photo-1555597673-b21d5c935865?w=400&h=200&fit=crop',
+    'Multijeux':        'https://images.unsplash.com/photo-1461896836934-68f78c8c46b6?w=400&h=200&fit=crop',
+    'Ultimate':         'https://images.unsplash.com/photo-1461896836934-68f78c8c46b6?w=400&h=200&fit=crop',
+    'Saut à la perche': 'https://images.unsplash.com/photo-1461896836934-68f78c8c46b6?w=400&h=200&fit=crop',
+    'Bowling':          'https://images.unsplash.com/photo-1508961990440-f1040e1c6d05?w=400&h=200&fit=crop',
+    "Tir à l'arc":      'https://images.unsplash.com/photo-1511884642898-4c92249e20b6?w=400&h=200&fit=crop',
+    'Golf':             'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=400&h=200&fit=crop',
+}
+
+ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif', 'webp'}
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def get_sport_images():
+    """Retourne le dict images des sports (DB en priorité, sinon défauts)"""
+    conn = sqlite3.connect(DATABASE_PATH)
+    c = conn.cursor()
+    c.execute("SELECT key, value FROM settings WHERE key LIKE 'sport_image_%'")
+    rows = c.fetchall()
+    conn.close()
+    images = dict(DEFAULT_SPORT_IMAGES)
+    for key, value in rows:
+        sport_name = key[len('sport_image_'):]
+        images[sport_name] = value
+    return images
+
+
+# ===========================
 # ROUTES D'AUTHENTIFICATION
 # ===========================
 
@@ -107,6 +180,11 @@ def register():
     """Page d'inscription"""
     if current_user.is_authenticated:
         return redirect(url_for('index'))
+
+    # Vérifier si les inscriptions sont activées
+    if get_setting('registration_enabled', '1') == '0':
+        flash('Les inscriptions sont actuellement désactivées.', 'error')
+        return redirect(url_for('login'))
 
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
@@ -169,8 +247,35 @@ def login():
         # Récupérer l'utilisateur
         user_data = get_user_by_username(username)
 
+        whitelist_enabled = get_setting('whitelist_enabled', '0') == '1'
+
+        # --- Mode liste blanche ---
+        if whitelist_enabled and user_data and not bool(user_data.get('is_admin', 0)):
+            whitelist = json.loads(get_setting('whitelist', '[]'))
+            entry = next((e for e in whitelist if e.get('username') == username), None)
+            if not entry:
+                flash('Accès refusé. Votre compte n\'est pas dans la liste autorisée.', 'error')
+                return render_template('login.html')
+            if not check_password_hash(entry['password_hash'], password):
+                flash('Nom d\'utilisateur ou mot de passe incorrect.', 'error')
+                return render_template('login.html')
+            # Credentials whitelist OK → connecter avec le compte DB
+            user = User(
+                id=user_data['id'],
+                username=user_data['username'],
+                email=user_data['email'],
+                points=user_data['points'],
+                avatar_color=user_data['avatar_color'],
+                is_admin=False
+            )
+            login_user(user, remember=remember)
+            next_page = request.args.get('next')
+            if next_page and next_page.startswith('/'):
+                return redirect(next_page)
+            return redirect(url_for('index'))
+
+        # --- Mode normal ---
         if user_data and check_password_hash(user_data['password_hash'], password):
-            # Créer l'objet User et connecter
             user = User(
                 id=user_data['id'],
                 username=user_data['username'],
@@ -180,8 +285,6 @@ def login():
                 is_admin=bool(user_data.get('is_admin', 0))
             )
             login_user(user, remember=remember)
-
-            # Redirection vers la page demandée ou index
             next_page = request.args.get('next')
             if next_page and next_page.startswith('/'):
                 return redirect(next_page)
@@ -339,6 +442,7 @@ def index():
                          sports_list=sports_list,
                          niveaux_list=niveaux_list,
                          genres_list=genres_list,
+                         sport_images=get_sport_images(),
                          filters={
                              'sport': sport_filter,
                              'niveau': niveau_filter,
@@ -1013,7 +1117,9 @@ def api_chatbot():
     except requests.exceptions.Timeout:
         return jsonify({'response': "La réponse a pris trop de temps. Veuillez réessayer ! 😊"})
     except Exception as e:
-        return jsonify({'response': "Un problème technique est survenu. Veuillez réessayer plus tard. 🔧"})
+        import traceback
+        print("COACH ERROR:", traceback.format_exc())
+        return jsonify({'response': f"Erreur technique : {type(e).__name__}: {str(e)[:200]}"})
 
 
 # ===========================
@@ -1534,6 +1640,14 @@ def admin_delete_user(user_id):
     conn = sqlite3.connect(DATABASE_PATH)
     c = conn.cursor()
 
+    # Empêcher la suppression d'un compte administrateur
+    c.execute("SELECT is_admin FROM users WHERE id = ?", (user_id,))
+    target = c.fetchone()
+    if target and target[0]:
+        conn.close()
+        flash('Impossible de supprimer un compte administrateur.', 'error')
+        return redirect(url_for('admin_users'))
+
     c.execute("SELECT username FROM users WHERE id = ?", (user_id,))
     user = c.fetchone()
 
@@ -1590,7 +1704,224 @@ def admin_settings():
         return redirect(url_for('admin_settings'))
 
     current_key = get_setting('albert_api_key')
-    return render_template('admin/settings.html', albert_api_key=current_key)
+    current_logo = get_setting('logo_path', 'logo.png')
+    registration_enabled = get_setting('registration_enabled', '1') == '1'
+    whitelist_enabled = get_setting('whitelist_enabled', '0') == '1'
+    whitelist = json.loads(get_setting('whitelist', '[]'))
+    return render_template('admin/settings.html',
+                           albert_api_key=current_key,
+                           current_logo=current_logo,
+                           registration_enabled=registration_enabled,
+                           whitelist_enabled=whitelist_enabled,
+                           whitelist=whitelist)
+
+
+@app.route('/admin/settings/test-albert')
+@admin_required
+def admin_test_albert():
+    """Tester la connexion avec l'API Albert"""
+    api_key = get_setting('albert_api_key')
+    if not api_key:
+        return jsonify({'status': 'error', 'message': 'Aucune clé API configurée.'})
+    try:
+        response = requests.post(
+            f"{ALBERT_API_URL}/chat/completions",
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json={"model": "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
+                  "messages": [{"role": "user", "content": "Dis bonjour en une phrase."}],
+                  "max_tokens": 30},
+            timeout=10
+        )
+        if response.status_code == 200:
+            reply = response.json().get('choices', [{}])[0].get('message', {}).get('content', '...')
+            return jsonify({'status': 'success', 'message': f'Connexion réussie ✅ — Réponse : {reply}'})
+        else:
+            return jsonify({'status': 'error', 'message': f'Erreur {response.status_code} — Clé invalide ou expirée.'})
+    except requests.exceptions.Timeout:
+        return jsonify({'status': 'error', 'message': 'Timeout — L\'API Albert ne répond pas.'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': f'Erreur : {str(e)}'})
+
+
+@app.route('/admin/settings/upload-logo', methods=['POST'])
+@admin_required
+def admin_upload_logo():
+    """Upload d'un nouveau logo"""
+    file = request.files.get('logo_file')
+    if file and file.filename and allowed_file(file.filename):
+        ext = os.path.splitext(secure_filename(file.filename))[1].lower()
+        filename = f'logo_custom{ext}'
+        file.save(os.path.join(app.static_folder, filename))
+        set_setting('logo_path', filename)
+        flash('Logo mis à jour avec succès !', 'success')
+    else:
+        flash('Fichier invalide. Formats acceptés : jpg, png, gif, webp.', 'error')
+    return redirect(url_for('admin_settings'))
+
+
+@app.route('/admin/settings/reset-logo', methods=['POST'])
+@admin_required
+def admin_reset_logo():
+    """Réinitialiser le logo par défaut"""
+    set_setting('logo_path', 'logo.png')
+    flash('Logo réinitialisé.', 'success')
+    return redirect(url_for('admin_settings'))
+
+
+@app.route('/admin/settings/toggle-registration', methods=['POST'])
+@admin_required
+def admin_toggle_registration():
+    """Activer ou désactiver les inscriptions"""
+    current = get_setting('registration_enabled', '1')
+    new_value = '0' if current == '1' else '1'
+    set_setting('registration_enabled', new_value)
+    state = 'désactivées' if new_value == '0' else 'activées'
+    flash(f'Les inscriptions sont maintenant {state}.', 'success')
+    return redirect(url_for('admin_settings'))
+
+
+@app.route('/admin/settings/whitelist/toggle', methods=['POST'])
+@admin_required
+def admin_toggle_whitelist():
+    """Activer ou désactiver la liste blanche"""
+    current = get_setting('whitelist_enabled', '0')
+    new_value = '0' if current == '1' else '1'
+    set_setting('whitelist_enabled', new_value)
+    state = 'activée' if new_value == '1' else 'désactivée'
+    flash(f'La liste blanche est maintenant {state}.', 'success')
+    return redirect(url_for('admin_settings'))
+
+
+@app.route('/admin/settings/whitelist/add', methods=['POST'])
+@admin_required
+def admin_whitelist_add():
+    """Ajouter manuellement un compte à la liste blanche"""
+    username = request.form.get('username', '').strip()
+    password = request.form.get('password', '').strip()
+    email = request.form.get('email', '').strip() or None
+
+    if not username or not password:
+        flash('Identifiant et mot de passe requis.', 'error')
+        return redirect(url_for('admin_settings'))
+    if len(password) < 6:
+        flash('Le mot de passe doit contenir au moins 6 caractères.', 'error')
+        return redirect(url_for('admin_settings'))
+
+    whitelist = json.loads(get_setting('whitelist', '[]'))
+    if any(e.get('username') == username for e in whitelist):
+        flash(f'« {username} » est déjà dans la liste blanche.', 'info')
+        return redirect(url_for('admin_settings'))
+
+    entry = {
+        'username': username,
+        'password': password,
+        'password_hash': generate_password_hash(password)
+    }
+    if email:
+        entry['email'] = email
+    whitelist.append(entry)
+    set_setting('whitelist', json.dumps(whitelist))
+    flash(f'« {username} » ajouté à la liste blanche.', 'success')
+    return redirect(url_for('admin_settings'))
+
+
+@app.route('/admin/settings/whitelist/generate', methods=['POST'])
+@admin_required
+def admin_whitelist_generate():
+    """Générer automatiquement un compte de test"""
+    import secrets, string
+    adj = ['rapide', 'fort', 'agile', 'brave', 'vif', 'grand', 'fier', 'sûr']
+    sport = ['lion', 'aigle', 'tigre', 'requin', 'faucon', 'puma', 'lynx', 'cobra']
+    username = f"{random.choice(adj)}_{random.choice(sport)}_{random.randint(10,99)}"
+    alphabet = string.ascii_letters + string.digits + '!@#$'
+    password = ''.join(secrets.choice(alphabet) for _ in range(10))
+
+    whitelist = json.loads(get_setting('whitelist', '[]'))
+    # Sécurité : éviter les doublons
+    if any(e.get('username') == username for e in whitelist):
+        username += str(random.randint(1, 9))
+
+    entry = {
+        'username': username,
+        'password': password,
+        'password_hash': generate_password_hash(password)
+    }
+    whitelist.append(entry)
+    set_setting('whitelist', json.dumps(whitelist))
+    flash(f'Compte « {username} » généré avec succès.', 'success')
+    return redirect(url_for('admin_settings'))
+
+
+@app.route('/admin/settings/whitelist/remove', methods=['POST'])
+@admin_required
+def admin_whitelist_remove():
+    """Retirer un compte de la liste blanche"""
+    username = request.form.get('username', '').strip()
+    whitelist = json.loads(get_setting('whitelist', '[]'))
+    new_list = [e for e in whitelist if e.get('username') != username]
+    if len(new_list) < len(whitelist):
+        set_setting('whitelist', json.dumps(new_list))
+        flash(f'« {username} » supprimé de la liste blanche.', 'success')
+    return redirect(url_for('admin_settings'))
+
+
+# ===========================
+# ADMIN - IMAGES DES SPORTS
+# ===========================
+
+@app.route('/admin/sport-images')
+@admin_required
+def admin_sport_images():
+    """Visualiser et modifier les images des sports"""
+    images = get_sport_images()
+    sports = [(sport, images.get(sport, '')) for sport in DEFAULT_SPORT_IMAGES.keys()]
+    return render_template('admin/sport_images.html', sports=sports)
+
+
+@app.route('/admin/sport-images/update', methods=['POST'])
+@admin_required
+def admin_update_sport_image():
+    """Mettre à jour l'image d'un sport (upload fichier ou URL)"""
+    sport = request.form.get('sport', '').strip()
+    image_url = request.form.get('image_url', '').strip()
+
+    if not sport:
+        flash('Sport non spécifié.', 'error')
+        return redirect(url_for('admin_sport_images'))
+
+    # Priorité : fichier uploadé
+    file = request.files.get('image_file')
+    if file and file.filename and allowed_file(file.filename):
+        sports_dir = os.path.join(app.static_folder, 'images', 'sports')
+        os.makedirs(sports_dir, exist_ok=True)
+        safe_name = re.sub(r'[^a-zA-Z0-9]', '_', sport).lower()
+        ext = os.path.splitext(secure_filename(file.filename))[1].lower() or '.jpg'
+        filename = f"{safe_name}{ext}"
+        file.save(os.path.join(sports_dir, filename))
+        image_url = f'/static/images/sports/{filename}'
+
+    if image_url:
+        set_setting(f'sport_image_{sport}', image_url)
+        flash(f'Image mise à jour pour « {sport} » !', 'success')
+    else:
+        flash('Aucune image fournie.', 'error')
+
+    return redirect(url_for('admin_sport_images'))
+
+
+@app.route('/admin/sport-images/reset', methods=['POST'])
+@admin_required
+def admin_reset_sport_image():
+    """Réinitialiser l'image d'un sport à sa valeur par défaut"""
+    sport = request.form.get('sport', '').strip()
+    if sport:
+        conn = sqlite3.connect(DATABASE_PATH)
+        c = conn.cursor()
+        c.execute("DELETE FROM settings WHERE key = ?", (f'sport_image_{sport}',))
+        conn.commit()
+        conn.close()
+        flash(f'Image réinitialisée pour « {sport} ».', 'success')
+    return redirect(url_for('admin_sport_images'))
 
 
 # ===========================

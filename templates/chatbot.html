@@ -12,6 +12,12 @@
             <p class="text-muted">Choisis ton sport pour un conseil personnalisé, ou discute librement avec Sporty</p>
         </div>
 
+        <div class="text-center mb-3">
+            <button class="btn btn-primary" onclick="selectSport(null, '🏋️', '#667eea')">
+                <i class="bi bi-chat-dots"></i> Discuter librement avec Sporty
+            </button>
+        </div>
+
         <div class="coach-sport-grid" id="coach-sport-grid">
             {% for sport in sports_data %}
             <div class="coach-sport-wrapper" data-sport="{{ sport.name }}">
@@ -29,12 +35,6 @@
                 </button>
             </div>
             {% endfor %}
-        </div>
-
-        <div class="text-center mt-4">
-            <button class="btn btn-outline-secondary" onclick="selectSport(null, '🏋️', '#667eea')">
-                <i class="bi bi-chat-dots"></i> Discuter librement avec Sporty
-            </button>
         </div>
     </div>
 
