@@ -1812,6 +1812,7 @@ def admin_whitelist_add():
     username = request.form.get('username', '').strip()
     password = request.form.get('password', '').strip()
     email = request.form.get('email', '').strip() or None
+    assignee = request.form.get('assignee', '').strip() or None
 
     if not username or not password:
         flash('Identifiant et mot de passe requis.', 'error')
@@ -1825,13 +1826,12 @@ def admin_whitelist_add():
         flash(f'« {username} » est déjà dans la liste blanche.', 'info')
         return redirect(url_for('admin_settings'))
 
-    entry = {
-        'username': username,
-        'password': password,
-        'password_hash': generate_password_hash(password)
-    }
+    password_hash = generate_password_hash(password)
+    entry = {'username': username, 'password': password, 'password_hash': password_hash}
     if email:
         entry['email'] = email
+    if assignee:
+        entry['assignee'] = assignee
     whitelist.append(entry)
     set_setting('whitelist', json.dumps(whitelist))
 
@@ -1885,12 +1885,52 @@ def admin_whitelist_remove():
     new_list = [e for e in whitelist if e.get('username') != username]
     if len(new_list) < len(whitelist):
         set_setting('whitelist', json.dumps(new_list))
-        # Supprimer aussi le compte utilisateur en base (sauf admin)
         user_data = get_user_by_username(username)
         if user_data and not user_data.get('is_admin'):
             delete_user_completely(user_data['id'])
         flash(f'« {username} » supprimé de la liste blanche et des utilisateurs.', 'success')
     return redirect(url_for('admin_settings'))
+
+
+@app.route('/admin/settings/whitelist/assign', methods=['POST'])
+@admin_required
+def admin_whitelist_assign():
+    """Mettre à jour le champ 'assigné à' d'un compte whitelist"""
+    username = request.form.get('username', '').strip()
+    assignee = request.form.get('assignee', '').strip()
+    whitelist = json.loads(get_setting('whitelist', '[]'))
+    for entry in whitelist:
+        if entry.get('username') == username:
+            entry['assignee'] = assignee
+            break
+    set_setting('whitelist', json.dumps(whitelist))
+    return ('', 204)  # Réponse silencieuse (AJAX)
+
+
+@app.route('/admin/settings/whitelist/export')
+@admin_required
+def admin_whitelist_export():
+    """Exporter tous les comptes whitelist en fichier texte"""
+    from flask import Response
+    whitelist = json.loads(get_setting('whitelist', '[]'))
+    app_url = request.host_url.rstrip('/')
+    lines = ['OLYMPUS — Comptes testeurs', '=' * 40, '']
+    for i, e in enumerate(whitelist, 1):
+        lines.append(f"Compte #{i}")
+        if e.get('assignee'):
+            lines.append(f"  Assigné à   : {e['assignee']}")
+        lines.append(f"  Identifiant : {e['username']}")
+        lines.append(f"  Mot de passe: {e.get('password', '(non disponible)')}")
+        if e.get('email'):
+            lines.append(f"  Email       : {e['email']}")
+        lines.append(f"  URL         : {app_url}")
+        lines.append('')
+    content = '\n'.join(lines)
+    return Response(
+        content,
+        mimetype='text/plain',
+        headers={'Content-Disposition': 'attachment; filename=comptes_testeurs.txt'}
+    )
 
 
 # ===========================
